@@ -1,0 +1,179 @@
+Living without Go generics
+
+Go! Academy
+21 November 2018
+Tags: Go, generics, interface, code generation
+
+Daniel Furman
+Software Developer, Codilime
+daniel.furman@codilime.com
+
+: Prezentacja jest inspirowana wystąpieniem Krzysztofa Drysia na code::dive 2018
+
+* Agenda
+
+- Built-in generic constructs
+- Go interfaces
+- Code generation
+- Copy-paste method
+- Summary
+
+* Problem
+
+No generic programming support in Go.
+
+"Generics are convenient but they come at a cost in complexity in the type system and run-time. We haven't yet found a design that gives value proportionate to the complexity, although we continue to think about it." [2]
+
+: Go nie posiada kompletnego zestawu mechanizmów dla programowania generycznego
+: Zdaniem twórców Go dotychczas proponowane rozwiązania zbytnio zwiększały złożoność języka.
+: Prace nad wprowadzeniem tych mechanizmów do Go 2.0 trwają
+
+* Method 1
+
+- *Use*built-in*generic*constructs*
+
+: Go posiada elementy generyczne.
+
+* Built-in generics - map, slice, append
+
+Task: implement function that returns keys of given map.
+
+* Built-in generics - map, slice, append
+
+First variant of keys() function:
+.code -numbers code.go /built-ins OMIT/,/built-ins# OMIT/
+
+* Built-in generics - map, slice, append
+
+Second variant of keys() function:
+.code -numbers code.go /built-ins2 OMIT/,/built-ins2# OMIT/
+
+TODO: explain why map, slice and append are generic
+
+* Built-in generics
+
+Go has generic constructs:
+
+- types: map, slice, channel
+- functions: append()
+- new ones cannot be created
+
+: Bazowanie na powyższych elementach jest często wystarczające.
+
+* Method 2
+
+- Use built-in generic constructs
+- *Use*interfaces*
+
+* Interfaces revised
+
+io.Reader interface:
+.code -numbers code.go /reader OMIT/,/reader# OMIT/
+
+os.File implements io.Reader interface:
+.code -numbers code.go /file OMIT/,/file# OMIT/
+
+Fact of implementing an interface is implicit.
+
+: Interfejs składa się z wielu metod.
+: Typ implementuje interfejs, gdy implementuje wszystkie jego metody.
+
+* Interfaces revised
+
+Concrete type passed:
+.code -numbers code.go /file usage OMIT/,/file usage# OMIT/
+
+Interface passed:
+.code -numbers code.go /file usage2 OMIT/,/file usage2# OMIT/
+
+`read()` accepts all io.Readers now - it is more general and reusable.
+
+* Use interfaces - sorting [1]
+
+Task: sort students by average score:
+.code -numbers code.go /student OMIT/,/student# OMIT/
+
+* Use interfaces - sorting with sort.Interface [1]
+
+sort.Sort() accepts objects by sort.Interface:
+.code -numbers code.go /sort OMIT/,/sort# OMIT/
+
+* Use interfaces - sorting with sort.Interface [1]
+
+Create Students type that implements sort.Interface and use it:
+.code -numbers code.go /sort solution OMIT/,/sort solution# OMIT/
+
+- It is type-safe
+- Solution requires a bit of boilerplate
+
+* Use interfaces - sorting
+
+There is other way to do that.
+
+* Use interfaces - sorting with sort.Slice() [1]
+
+sort.Slice() algorithm:
+.code -numbers code.go /slice OMIT/,/slice# OMIT/
+
+* Use interfaces - sorting with sort.Slice() [1]
+
+Use sort.Slice() with function defined in-place:
+.code -numbers code.go /sort2 OMIT/,/sort2# OMIT/
+
+- It is type-safe except first argument
+- Code is short - there is no boilerplate
+
+* Use interfaces - sorting with sort.Slice()
+
+- Package sort contains more general-purpose algorithms: SliceStable(), SliceIsSorted(), Search()
+- Those algorithms could be used for custom types
+- One can implement more such general-purpose algorithms
+
+* Method 3
+
+- Use built-in generic constructs
+- Use interfaces
+- *Use*code*generation*
+
+* TODO Use code generation - case study
+
+Used a lot in [[https://github.com/Juniper/contrail][Juniper/contrail project]]
+
+* Method 4
+
+- Use built-in generic constructs
+- Use interfaces
+- Use code generation
+- *Use*copy-paste*method*
+
+* TODO The copy-paste method
+
+TODO: "a little bit of copying..." quote
+
+* The copy-paste method - type-safe Set data type [3]
+
+.image https://i.imgur.com/pxJetc3.gif
+
+: Metoda ta może się wydawać absurdalna - można znaleźć wiele ironicznych opinii na jej temat.
+: Przykład tworzenia typu PersonSet dla struktury Set
+
+* Method 5
+
+- Use built-in generic constructs
+- Use interfaces
+- Use code generation
+- Use copy-paste method
+- *Use*reflections*
+
+Not discussed today.
+
+* Summary
+
+- There are multiple ways to deal without proper generics support
+- Chosen method depends on circumstances
+
+* References
+
+.link https://codedive.pl/index/speaker/name/krzysztof-drys [1] "How I learned to stop worrying about generics and love Go presentation" by Krzysztof Dryś @ code::dive 2018
+.link https://golang.org/doc/faq#generics [2] Go FAQ: Why does Go not have generic types?
+.link https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/ [3] Gopher demonstrates how easy it is to create a type safe Set data type in Go

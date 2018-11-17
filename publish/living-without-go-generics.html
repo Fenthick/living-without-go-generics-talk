@@ -1,0 +1,789 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Living without Go generics</title>
+    <meta charset='utf-8'>
+    <script src='static/slides.js'></script>
+  </head>
+
+  <body style='display: none'>
+
+    <section class='slides layout-widescreen'>
+      
+      <article>
+        <h1>Living without Go generics</h1>
+        
+        
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Go! Academy
+  </p>
+  
+
+  
+  <p>
+    21 November 2018
+  </p>
+  
+
+          </div>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Daniel Furman
+  </p>
+  
+
+  
+  <p>
+    Software Developer, Codilime
+  </p>
+  
+
+          </div>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    
+  </p>
+  
+
+          </div>
+        
+      </article>
+      
+  
+  
+      <article>
+      
+        <h3>Agenda</h3>
+        
+  <ul>
+  
+    <li>Built-in generic constructs</li>
+  
+    <li>Go interfaces</li>
+  
+    <li>Code generation</li>
+  
+    <li>Copy-paste method</li>
+  
+    <li>Summary</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[1]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Problem</h3>
+        
+  
+  <p>
+    No generic programming support in Go.
+  </p>
+  
+
+  
+  <p>
+    &#34;Generics are convenient but they come at a cost in complexity in the type system and run-time. We haven&#39;t yet found a design that gives value proportionate to the complexity, although we continue to think about it.&#34; [2]
+  </p>
+  
+
+      
+      <div class="pagenumber">[2]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Method 1</h3>
+        
+  <ul>
+  
+    <li><b>Use built-in generic constructs</b></li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[3]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Built-in generics - map, slice, append</h3>
+        
+  
+  <p>
+    Task: implement function that returns keys of given map.
+  </p>
+  
+
+      
+      <div class="pagenumber">[4]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Built-in generics - map, slice, append</h3>
+        
+  
+  <p>
+    First variant of keys() function:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="13">// keys returns slice of keys of given map.</span>
+<span num="14"><b>func keys(m map[string]int) []string {</b></span>
+<span num="15">    var keys []string</span>
+<span num="16">    for k := range m {</span>
+<span num="17">        keys = append(keys, k)</span>
+<span num="18">    }</span>
+<span num="19"></span>
+<span num="20">    return keys</span>
+<span num="21">}</span>
+</pre>
+
+
+</div>
+
+      
+      <div class="pagenumber">[5]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Built-in generics - map, slice, append</h3>
+        
+  
+  <p>
+    Second variant of keys() function:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="25">// keys2 returns slice of keys of given map.</span>
+<span num="26"><b>func keys2(m map[int]string) []int {</b></span>
+<span num="27">    var keys []int</span>
+<span num="28">    for k := range m {</span>
+<span num="29">        keys = append(keys, k)</span>
+<span num="30">    }</span>
+<span num="31"></span>
+<span num="32">    return keys</span>
+<span num="33">}</span>
+</pre>
+
+
+</div>
+
+  
+  <p>
+    TODO: explain why map, slice and append are generic
+  </p>
+  
+
+      
+      <div class="pagenumber">[6]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Built-in generics</h3>
+        
+  
+  <p>
+    Go has generic constructs:
+  </p>
+  
+
+  <ul>
+  
+    <li>types: map, slice, channel</li>
+  
+    <li>functions: append()</li>
+  
+    <li>new ones cannot be created</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[7]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Method 2</h3>
+        
+  <ul>
+  
+    <li>Use built-in generic constructs</li>
+  
+    <li><b>Use interfaces</b></li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[8]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Interfaces revised</h3>
+        
+  
+  <p>
+    io.Reader interface:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="37">type Reader interface {</span>
+<span num="38">    Read(p []byte) (n int, err error)</span>
+<span num="39">}</span>
+</pre>
+
+
+</div>
+
+  
+  <p>
+    os.File implements io.Reader interface:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="43">type File struct {</span>
+<span num="44">    // ...</span>
+<span num="45">}</span>
+<span num="46"></span>
+<span num="47">func (f *File) Read(b []byte) (n int, err error) {</span>
+<span num="48">    // ...</span>
+<span num="50">}</span>
+</pre>
+
+
+</div>
+
+  
+  <p>
+    Fact of implementing an interface is implicit.
+  </p>
+  
+
+      
+      <div class="pagenumber">[9]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Interfaces revised</h3>
+        
+  
+  <p>
+    Concrete type passed:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="54"><b>func readAndDoSomething(f *os.File) {</b></span>
+<span num="55">    var b []byte</span>
+<span num="56">    n, err := f.Read(b)</span>
+<span num="57">    // do something</span>
+<span num="59">}</span>
+</pre>
+
+
+</div>
+
+  
+  <p>
+    Interface passed:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="63"><b>func readAndDoSomething2(f io.Reader) {</b></span>
+<span num="64">    var b []byte</span>
+<span num="65">    n, err := f.Read(b)</span>
+<span num="66">    // do something</span>
+<span num="68">}</span>
+</pre>
+
+
+</div>
+
+  
+  <p>
+    <code>read()</code> accepts all io.Readers now - it is more general and reusable.
+  </p>
+  
+
+      
+      <div class="pagenumber">[10]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting [1]</h3>
+        
+  
+  <p>
+    Task: sort students by average score:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="73">type Student struct{}</span>
+<span num="74"></span>
+<span num="75">func (s *Student) AverageScore() float64 {</span>
+<span num="76">    // calculate average score</span>
+<span num="78">}</span>
+<span num="79"></span>
+<span num="80">func sortStudentsByAverageScore(students []Student) {</span>
+<span num="81">    <b>// needs to be implemented</b></span>
+<span num="82">}</span>
+</pre>
+
+
+</div>
+
+      
+      <div class="pagenumber">[11]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting with sort.Interface [1]</h3>
+        
+  
+  <p>
+    sort.Sort() accepts objects by sort.Interface:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="87">type Interface interface {</span>
+<span num="88">    // Len is the number of elements in the collection.</span>
+<span num="89">    Len() int</span>
+<span num="90">    // Less reports whether the element with</span>
+<span num="91">    // index i should sort before the element with index j.</span>
+<span num="92">    Less(i, j int) bool</span>
+<span num="93">    // Swap swaps the elements with indexes i and j.</span>
+<span num="94">    Swap(i, j int)</span>
+<span num="95">}</span>
+<span num="96"></span>
+<span num="97">func Sort(data sort.Interface) {</span>
+<span num="98">    // implementation omitted</span>
+<span num="99">}</span>
+</pre>
+
+
+</div>
+
+      
+      <div class="pagenumber">[12]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting with sort.Interface [1]</h3>
+        
+  
+  <p>
+    Create Students type that implements sort.Interface and use it:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="104">type Students []Student</span>
+<span num="105"></span>
+<span num="106">func (s Students) Len() int {</span>
+<span num="107">    return len(s)</span>
+<span num="108">}</span>
+<span num="109"></span>
+<span num="110">func (s Students) Less(i, j int) bool {</span>
+<span num="111">    return s[i].AverageScore() &lt; s[j].AverageScore()</span>
+<span num="112">}</span>
+<span num="113"></span>
+<span num="114">func (s Students) Swap(i, j int) {</span>
+<span num="115">    s[i], s[j] = s[j], s[i]</span>
+<span num="116">}</span>
+<span num="117"></span>
+<span num="118">func sortStudentsByAverageScore2(students []Student) {</span>
+<span num="119">    sort.Sort(Students(students))</span>
+<span num="120">}</span>
+</pre>
+
+
+</div>
+
+  <ul>
+  
+    <li>It is type-safe</li>
+  
+    <li>Solution requires a bit of boilerplate</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[13]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting</h3>
+        
+  
+  <p>
+    There is other way to do that.
+  </p>
+  
+
+      
+      <div class="pagenumber">[14]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting with sort.Slice() [1]</h3>
+        
+  
+  <p>
+    sort.Slice() algorithm:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="127">// Slice sorts the provided slice given the provided less function.</span>
+<span num="128">// The function panics if the provided interface is not a slice.</span>
+<span num="129">func Slice(slice interface{}, less func(i, j int) bool) {</span>
+<span num="130">    // implementation omitted</span>
+<span num="131">}</span>
+</pre>
+
+
+</div>
+
+      
+      <div class="pagenumber">[15]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting with sort.Slice() [1]</h3>
+        
+  
+  <p>
+    Use sort.Slice() with function defined in-place:
+  </p>
+  
+
+  <div class="code" contenteditable="true" spellcheck="false">
+
+
+<pre class="numbers"><span num="127">// Slice sorts the provided slice given the provided less function.</span>
+<span num="128">// The function panics if the provided interface is not a slice.</span>
+<span num="129">func Slice(slice interface{}, less func(i, j int) bool) {</span>
+<span num="130">    // implementation omitted</span>
+<span num="131">}</span>
+<span num="133"></span>
+<span num="134">func sortStudentsByAverageScore3(students []Student) {</span>
+<span num="135">    sort.Slice(students, func(i int, j int) bool {</span>
+<span num="136">        return students[i].AverageScore() &lt; students[j].AverageScore()</span>
+<span num="137">    })</span>
+<span num="138">}</span>
+</pre>
+
+
+</div>
+
+  <ul>
+  
+    <li>It is type-safe except first argument</li>
+  
+    <li>Code is short - there is no boilerplate</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[16]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use interfaces - sorting with sort.Slice()</h3>
+        
+  <ul>
+  
+    <li>Package sort contains more general-purpose algorithms: SliceStable(), SliceIsSorted(), Search()</li>
+  
+    <li>Those algorithms could be used for custom types</li>
+  
+    <li>One can implement more such general-purpose algorithms</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[17]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Method 3</h3>
+        
+  <ul>
+  
+    <li>Use built-in generic constructs</li>
+  
+    <li>Use interfaces</li>
+  
+    <li><b>Use code generation</b></li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[18]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>TODO Use code generation - case study</h3>
+        
+  
+  <p>
+    Used a lot in <a href="https://github.com/Juniper/contrail" target="_blank">Juniper/contrail project</a>
+  </p>
+  
+
+      
+      <div class="pagenumber">[19]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Method 4</h3>
+        
+  <ul>
+  
+    <li>Use built-in generic constructs</li>
+  
+    <li>Use interfaces</li>
+  
+    <li>Use code generation</li>
+  
+    <li><b>Use copy-paste method</b></li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[20]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>TODO The copy-paste method</h3>
+        
+  
+  <p>
+    TODO: &#34;a little bit of copying...&#34; quote
+  </p>
+  
+
+      
+      <div class="pagenumber">[21]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>The copy-paste method - type-safe Set data type [3]</h3>
+        
+<div class="image">
+  <img src="https://i.imgur.com/pxJetc3.gif">
+</div>
+
+      
+      <div class="pagenumber">[22]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Method 5</h3>
+        
+  <ul>
+  
+    <li>Use built-in generic constructs</li>
+  
+    <li>Use interfaces</li>
+  
+    <li>Use code generation</li>
+  
+    <li>Use copy-paste method</li>
+  
+    <li><b>Use reflections</b></li>
+  
+  </ul>
+
+  
+  <p>
+    Not discussed today.
+  </p>
+  
+
+      
+      <div class="pagenumber">[23]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Summary</h3>
+        
+  <ul>
+  
+    <li>There are multiple ways to deal without proper generics support</li>
+  
+    <li>Chosen method depends on circumstances</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[24]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>References</h3>
+        <p class="link"><a href="https://codedive.pl/index/speaker/name/krzysztof-drys" target="_blank">[1] &#34;How I learned to stop worrying about generics and love Go presentation&#34; by Krzysztof Dryś @ code::dive 2018</a></p><p class="link"><a href="https://golang.org/doc/faq#generics" target="_blank">[2] Go FAQ: Why does Go not have generic types?</a></p><p class="link"><a href="https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/" target="_blank">[3] Gopher demonstrates how easy it is to create a type safe Set data type in Go</a></p>
+      
+      <div class="pagenumber">[25]</div>
+      </article>
+  
+  
+
+      <article>
+        <h3>Thank you</h1>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Go! Academy
+  </p>
+  
+
+  
+  <p>
+    21 November 2018
+  </p>
+  
+<p class="link"><a href="#ZgotmplZ" target="_blank">Tags: Go, generics, interface, code generation</a></p>
+          </div>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Daniel Furman
+  </p>
+  
+
+  
+  <p>
+    Software Developer, Codilime
+  </p>
+  
+<p class="link"><a href="mailto:daniel.furman@codilime.com" target="_blank">daniel.furman@codilime.com</a></p>
+          </div>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    
+  </p>
+  
+
+          </div>
+        
+      </article>
+
+  </body>
+  
+</html>
