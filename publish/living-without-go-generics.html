@@ -102,6 +102,12 @@
   </p>
   
 
+  
+  <p>
+    There are plans of introducing generics in Go 2.0
+  </p>
+  
+
       
       <div class="pagenumber">[2]</div>
       </article>
@@ -200,11 +206,13 @@
 
 </div>
 
+  <ul>
   
-  <p>
-    TODO: explain why map, slice and append are generic
-  </p>
+    <li>Map and slice allow to create multiple types - map and slice are generic</li>
   
+    <li>In both variants <i>for</i> loop looks exactly the same - append is generic</li>
+  
+  </ul>
 
       
       <div class="pagenumber">[6]</div>
@@ -224,11 +232,11 @@
 
   <ul>
   
-    <li>types: map, slice, channel</li>
+    <li>Types: map, slice, channel</li>
   
-    <li>functions: append()</li>
+    <li>Functions: len(), cap(), append(), copy(), close(), delete()</li>
   
-    <li>new ones cannot be created</li>
+    <li>New ones cannot be created</li>
   
   </ul>
 
@@ -300,6 +308,9 @@
 
   
   <p>
+    Type implements interface, when it implements all its methods.
+<br>
+
     Fact of implementing an interface is implicit.
   </p>
   
@@ -613,16 +624,417 @@
   
       <article>
       
-        <h3>TODO Use code generation - case study</h3>
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+<div class="image">
+  <img src="./images/contrail.png">
+</div>
+<p class="caption"><a href="https://github.com/Juniper/contrail" target="_blank">Juniper/contrail project</a> renamed lately to Tungsten Fabric</p>
+      
+      <div class="pagenumber">[19]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+<div class="image">
+  <img src="./images/contrail2.png">
+</div>
+
+  <ul>
+  
+    <li>It consists of multiple schema-driven components</li>
+  
+    <li>Code generation from data model schema is first-class citizen here</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[20]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+<div class="image">
+  <img src="./images/contrail3.png">
+</div>
+
+  <ul>
+  
+    <li>Components deployed in production are contained in <i>contrail</i> application</li>
+  
+    <li><i>contrailschema</i> tool is used to generate code for other components</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[21]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
         
   
   <p>
-    Used a lot in <a href="https://github.com/Juniper/contrail" target="_blank">Juniper/contrail project</a>
+    Model of data (and more) is located in <i>schemas</i> directory:
   </p>
   
 
+  
+  <div class="code"><pre>&gt; tree schemas/
+schemas/
+├── abstract
+│   ├── base_types.yml
+│   ├── base.yml
+│   └── has_status.yml
+├── core
+│   ├── access-control-list-schema.yml
+│   ├── address-group-schema.yml
+│   ├── alarm-schema.yml
+│   ├── alias-ip-pool-schema.yml
+│   ├── alias-ip-schema.yml
+│   ├── analytics-node-schema.yml
+│   ├── api-access-list-schema.yml
+│   ├── application-policy-set-schema.yml</pre></div>
+  
+
+  
+  <div class="code"><pre>│   ├── bgp-as-a-service-schema.yml
+│   ├── bgp-router-schema.yml
+│   ├── bgpvpn-schema.yml
+│   ├── bridge-domain-schema.yml
+│   ├── card-schema.yml</pre></div>
+  
+
       
-      <div class="pagenumber">[19]</div>
+      <div class="pagenumber">[22]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    Schema has following properties:
+  </p>
+  
+
+  <ul>
+  
+    <li>id: unique schema ID</li>
+  
+    <li>extends: list of abstract schemas that defined schema extends</li>
+  
+    <li>parents: parent resources</li>
+  
+    <li>references: many to many relations</li>
+  
+    <li>prefix: REST API path prefix</li>
+  
+    <li>schema: JSON Schema</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[23]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    Virtual Network schema example (1/2):
+  </p>
+  
+
+  
+  <div class="code"><pre>extends:
+- base
+id: virtual_network
+parents:
+  project:
+    description: Virtual network is collection of end points (interface or ip(s) or
+      MAC(s)) that can talk to each other by default. It is collection of subnets
+      connected by implicit router which default gateway in each subnet.
+    operations: CRUD
+    presence: optional
+plural: virtual_networks
+prefix: /
+references:
+  network_ipam:
+    $ref: types.json#definitions/VnSubnetsType
+    description: Reference to network-ipam this network is using. It has list of subnets
+      that are to be used as property of the reference.
+    operations: CRUD
+    presence: required
+...</pre></div>
+  
+
+      
+      <div class="pagenumber">[24]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    Virtual Network schema example (2/2):
+  </p>
+  
+
+  
+  <div class="code"><pre>...
+schema:
+  properties:
+    external_ipam:
+      description: IP address assignment to VM is done statically, outside of (external
+        to) Contrail Ipam. vCenter only feature.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    fabric_snat:
+      default: false
+      description: Provide connectivity to underlay network by port mapping
+      operations: CRUD
+      presence: optional
+      type: boolean
+  required: []
+  type: object</pre></div>
+  
+
+      
+      <div class="pagenumber">[25]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  <ul>
+  
+    <li>Project uses <a href="https://github.com/flosch/pongo2" target="_blank">Pongo2 template engine</a> which is based on <a href="https://docs.djangoproject.com/en/dev/ref/templates/language/" target="_blank">Django template language</a> to generate Go code as well as <i>.proto</i> definitions</li>
+  
+    <li><i>Protoc</i> is used to generate models and GRPC-related code from generated <i>proto</i> definitions</li>
+  
+    <li>Pongo2 templates for code generation are stored in <i>template</i> directory</li>
+  
+    <li>Configuration of templates is specified in <i>template config.yaml</i></li>
+  
+  </ul>
+
+<div class="image">
+  <img src="./images/pongo.png">
+</div>
+
+      
+      <div class="pagenumber">[26]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    Templates in project:
+  </p>
+  
+
+  
+  <div class="code"><pre>&gt; tree tools/templates/
+tools/templates/
+├── base_quota_counter.tmpl
+├── base_quota_getter.tmpl
+├── cachedb.tmpl
+├── client.tmpl
+├── db_common.tmpl
+├── db_test.tmpl
+├── db.tmpl
+├── db_types.tmpl
+├── etcdserviceif.tmpl
+├── event_encoding.tmpl
+├── list_response_encoding.tmpl
+├── model.tmpl
+├── proto_model.tmpl
+├── proto_service.tmpl
+├── quota_checker_service.tmpl
+├── sanitizer_service.tmpl
+├── service_common.tmpl
+├── service_interface.tmpl
+├── service.tmpl
+├── sql_cleanup_mysql.tmpl</pre></div>
+  
+
+      
+      <div class="pagenumber">[27]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    <i>tools/templates/proto model.tmpl</i> file (~50 lines of template code):
+  </p>
+  
+
+  
+  <div class="code"><pre>{% for schema in schemas %}{% if schema.Type != &#34;abstract&#34; and schema.ID %}
+
+message {{ schema.JSONSchema.GoName }} {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = &#34;{{ property.GoName }}&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;{{ property.ID }}\&#34;&#34;]; // {{ property.Description }}
+{%- endfor %}
+{%- for linkTo, reference in schema.References %}
+    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = &#34;{{ reference.GoName }}Refs&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;{{ linkTo }}_refs\&#34;&#34;];// {{ reference.Description }}
+{%- endfor %}
+{%- for _, backref in schema.BackReferences %}
+    {% set linkTo = backref.LinkTo %}
+    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_back_refs = {{ backref.Index }} [(gogoproto.customname) = &#34;{{ linkTo.JSONSchema.GoName }}BackRefs&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;{{ linkTo.ID }}_back_refs\&#34;&#34;]; // {{ backref.Description }}
+{%- endfor %}
+{%- for backref in schema.Children %}
+    {% set child = backref.LinkTo %}
+    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = &#34;{{ child.JSONSchema.GoName }}s&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;{{ child.Plural }}\&#34;&#34;]; // {{ backref.Description }}
+{%- endfor %}
+}
+
+...</pre></div>
+  
+
+      
+      <div class="pagenumber">[28]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    <i>models/generated.proto</i> file (~8000 lines):
+  </p>
+  
+
+  
+  <div class="code"><pre>message VirtualNetwork {
+    string uuid = 1 [(gogoproto.customname) = &#34;UUID&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;uuid\&#34;&#34;]; // UUID of the object, system automatically allocates one if not provided
+    string name = 2 [(gogoproto.customname) = &#34;Name&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;name\&#34;&#34;]; // Name of the object, defaults to &amp;#39;default-&amp;lt;resource-type&amp;gt;&amp;#39;
+    string parent_uuid = 3 [(gogoproto.customname) = &#34;ParentUUID&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;parent_uuid\&#34;&#34;]; // UUID of the parent object
+    string parent_type = 4 [(gogoproto.customname) = &#34;ParentType&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;parent_type\&#34;&#34;]; // Parent resource type
+    repeated string fq_name = 5 [(gogoproto.customname) = &#34;FQName&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;fq_name\&#34;&#34;]; // FQ Name of the object
+    IdPermsType id_perms = 6 [(gogoproto.customname) = &#34;IDPerms&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;id_perms\&#34;&#34;]; // System maintained identity, time  and permissions data.
+    string display_name = 7 [(gogoproto.customname) = &#34;DisplayName&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;display_name\&#34;&#34;]; // Display name user configured string(name) that can be updated any time. Used as openstack name.
+    KeyValuePairs annotations = 8 [(gogoproto.customname) = &#34;Annotations&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;annotations\&#34;&#34;]; // Dictionary of arbitrary (key, value) on a resource.
+    PermType2 perms2 = 9 [(gogoproto.customname) = &#34;Perms2&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;perms2\&#34;&#34;]; // Permissions data for role based access.
+    int64 configuration_version = 10 [(gogoproto.customname) = &#34;ConfigurationVersion&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;configuration_version\&#34;&#34;]; // Configuration Version for the object.
+    string address_allocation_mode = 11 [(gogoproto.customname) = &#34;AddressAllocationMode&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;address_allocation_mode\&#34;&#34;]; // Address allocation mode for virtual network.
+    EcmpHashingIncludeFields ecmp_hashing_include_fields = 12 [(gogoproto.customname) = &#34;EcmpHashingIncludeFields&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;ecmp_hashing_include_fields\&#34;&#34;]; // ECMP hashing config at global level.
+    RouteTargetList export_route_target_list = 13 [(gogoproto.customname) = &#34;ExportRouteTargetList&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;export_route_target_list\&#34;&#34;]; // List of route targets that are used as export for this virtual network.
+    bool external_ipam = 14 [(gogoproto.customname) = &#34;ExternalIpam&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;external_ipam\&#34;&#34;]; // IP address assignment to VM is done statically, outside of (external to) Contrail Ipam. vCenter only feature.
+    bool fabric_snat = 15 [(gogoproto.customname) = &#34;FabricSnat&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;fabric_snat\&#34;&#34;]; // Provide connectivity to underlay network by port mapping
+    bool flood_unknown_unicast = 16 [(gogoproto.customname) = &#34;FloodUnknownUnicast&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;flood_unknown_unicast\&#34;&#34;]; // When true, packets with unknown unicast MAC address are flooded within the network. Default they are dropped.
+    bool igmp_enable = 17 [(gogoproto.customname) = &#34;IgmpEnable&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;igmp_enable\&#34;&#34;]; // IGMP mode at Global level.
+    RouteTargetList import_route_target_list = 18 [(gogoproto.customname) = &#34;ImportRouteTargetList&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;import_route_target_list\&#34;&#34;]; // List of route targets that are used as import for this virtual network.
+    bool is_provider_network = 19 [(gogoproto.customname) = &#34;IsProviderNetwork&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;is_provider_network\&#34;&#34;]; // provider network status of the virtual-network.
+    bool is_shared = 20 [(gogoproto.customname) = &#34;IsShared&#34;, (gogoproto.moretags) = &#34;yaml:\&#34;is_shared\&#34;&#34;]; // When true, this virtual network is shared with all tenants.</pre></div>
+  
+
+      
+      <div class="pagenumber">[29]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study [4]</h3>
+        
+  
+  <p>
+    <i>pkg/models/generated.pb.go</i> file (~76000 lines of code):
+  </p>
+  
+
+  
+  <div class="code"><pre>type VirtualNetwork struct {
+    UUID                            string                                    `protobuf:&#34;bytes,1,opt,name=uuid,proto3&#34; json:&#34;uuid,omitempty&#34; yaml:&#34;uuid&#34;`
+    Name                            string                                    `protobuf:&#34;bytes,2,opt,name=name,proto3&#34; json:&#34;name,omitempty&#34; yaml:&#34;name&#34;`
+    ParentUUID                      string                                    `protobuf:&#34;bytes,3,opt,name=parent_uuid,json=parentUuid,proto3&#34; json:&#34;parent_uuid,omitempty&#34; yaml:&#34;parent_uuid&#34;`
+    ParentType                      string                                    `protobuf:&#34;bytes,4,opt,name=parent_type,json=parentType,proto3&#34; json:&#34;parent_type,omitempty&#34; yaml:&#34;parent_type&#34;`
+    FQName                          []string                                  `protobuf:&#34;bytes,5,rep,name=fq_name,json=fqName&#34; json:&#34;fq_name,omitempty&#34; yaml:&#34;fq_name&#34;`
+    IDPerms                         *IdPermsType                              `protobuf:&#34;bytes,6,opt,name=id_perms,json=idPerms&#34; json:&#34;id_perms,omitempty&#34; yaml:&#34;id_perms&#34;`
+    DisplayName                     string                                    `protobuf:&#34;bytes,7,opt,name=display_name,json=displayName,proto3&#34; json:&#34;display_name,omitempty&#34; yaml:&#34;display_name&#34;`
+    Annotations                     *KeyValuePairs                            `protobuf:&#34;bytes,8,opt,name=annotations&#34; json:&#34;annotations,omitempty&#34; yaml:&#34;annotations&#34;`
+    Perms2                          *PermType2                                `protobuf:&#34;bytes,9,opt,name=perms2&#34; json:&#34;perms2,omitempty&#34; yaml:&#34;perms2&#34;`
+    ConfigurationVersion            int64                                     `protobuf:&#34;varint,10,opt,name=configuration_version,json=configurationVersion,proto3&#34; json:&#34;configuration_version,omitempty&#34; yaml:&#34;configuration_version&#34;`
+    AddressAllocationMode           string                                    `protobuf:&#34;bytes,11,opt,name=address_allocation_mode,json=addressAllocationMode,proto3&#34; json:&#34;address_allocation_mode,omitempty&#34; yaml:&#34;address_allocation_mode&#34;`
+    EcmpHashingIncludeFields        *EcmpHashingIncludeFields                 `protobuf:&#34;bytes,12,opt,name=ecmp_hashing_include_fields,json=ecmpHashingIncludeFields&#34; json:&#34;ecmp_hashing_include_fields,omitempty&#34; yaml:&#34;ecmp_hashing_include_fields&#34;`
+    ExportRouteTargetList           *RouteTargetList                          `protobuf:&#34;bytes,13,opt,name=export_route_target_list,json=exportRouteTargetList&#34; json:&#34;export_route_target_list,omitempty&#34; yaml:&#34;export_route_target_list&#34;`
+    ExternalIpam                    bool                                      `protobuf:&#34;varint,14,opt,name=external_ipam,json=externalIpam,proto3&#34; json:&#34;external_ipam,omitempty&#34; yaml:&#34;external_ipam&#34;`
+    FabricSnat                      bool                                      `protobuf:&#34;varint,15,opt,name=fabric_snat,json=fabricSnat,proto3&#34; json:&#34;fabric_snat,omitempty&#34; yaml:&#34;fabric_snat&#34;`
+    FloodUnknownUnicast             bool                                      `protobuf:&#34;varint,16,opt,name=flood_unknown_unicast,json=floodUnknownUnicast,proto3&#34; json:&#34;flood_unknown_unicast,omitempty&#34; yaml:&#34;flood_unknown_unicast&#34;`
+    IgmpEnable                      bool                                      `protobuf:&#34;varint,17,opt,name=igmp_enable,json=igmpEnable,proto3&#34; json:&#34;igmp_enable,omitempty&#34; yaml:&#34;igmp_enable&#34;`
+    ImportRouteTargetList           *RouteTargetList                          `protobuf:&#34;bytes,18,opt,name=import_route_target_list,json=importRouteTargetList&#34; json:&#34;import_route_target_list,omitempty&#34; yaml:&#34;import_route_target_list&#34;`
+    IsProviderNetwork               bool                                      `protobuf:&#34;varint,19,opt,name=is_provider_network,json=isProviderNetwork,proto3&#34; json:&#34;is_provider_network,omitempty&#34; yaml:&#34;is_provider_network&#34;`
+    IsShared                        bool                                      `protobuf:&#34;varint,20,opt,name=is_shared,json=isShared,proto3&#34; json:&#34;is_shared,omitempty&#34; yaml:&#34;is_shared&#34;`</pre></div>
+  
+
+      
+      <div class="pagenumber">[30]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Use code generation - Juniper/contrail case study summary</h3>
+        
+  <ul>
+  
+    <li>There are many more template files</li>
+  
+    <li>In most cases it is simple Schema + Pongo template -&gt; Go code generation path</li>
+  
+    <li>Whole workflow is quite complex</li>
+  
+    <li>Large Go files lead to long compilation times</li>
+  
+    <li><b>It works</b> in the end</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[31]</div>
       </article>
   
   
@@ -644,23 +1056,45 @@
   </ul>
 
       
-      <div class="pagenumber">[20]</div>
+      <div class="pagenumber">[32]</div>
       </article>
   
   
   
       <article>
       
-        <h3>TODO The copy-paste method</h3>
+        <h3>The copy-paste method</h3>
+        
+  <ul>
+  
+    <li><a href="https://go-proverbs.github.io/" target="_blank">Go proverb</a>: &#34;<i>A little copying is better than a little dependency</i>&#34;</li>
+  
+    <li>Introducing code duplication is not always a bad idea</li>
+  
+  </ul>
+
+      
+      <div class="pagenumber">[33]</div>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>The copy-paste method</h3>
         
   
   <p>
-    TODO: &#34;a little bit of copying...&#34; quote
+    Official Go wiki encourages copy-pasting for operations on slices:
   </p>
   
 
+<div class="image">
+  <img src="./images/slice-tricks.png">
+</div>
+
       
-      <div class="pagenumber">[21]</div>
+      <div class="pagenumber">[34]</div>
       </article>
   
   
@@ -674,7 +1108,7 @@
 </div>
 
       
-      <div class="pagenumber">[22]</div>
+      <div class="pagenumber">[35]</div>
       </article>
   
   
@@ -704,7 +1138,7 @@
   
 
       
-      <div class="pagenumber">[23]</div>
+      <div class="pagenumber">[36]</div>
       </article>
   
   
@@ -719,10 +1153,12 @@
   
     <li>Chosen method depends on circumstances</li>
   
+    <li>We are still waiting on proper generics support</li>
+  
   </ul>
 
       
-      <div class="pagenumber">[24]</div>
+      <div class="pagenumber">[37]</div>
       </article>
   
   
@@ -730,9 +1166,9 @@
       <article>
       
         <h3>References</h3>
-        <p class="link"><a href="https://codedive.pl/index/speaker/name/krzysztof-drys" target="_blank">[1] &#34;How I learned to stop worrying about generics and love Go presentation&#34; by Krzysztof Dryś @ code::dive 2018</a></p><p class="link"><a href="https://golang.org/doc/faq#generics" target="_blank">[2] Go FAQ: Why does Go not have generic types?</a></p><p class="link"><a href="https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/" target="_blank">[3] Gopher demonstrates how easy it is to create a type safe Set data type in Go</a></p>
+        <p class="link"><a href="https://codedive.pl/index/speaker/name/krzysztof-drys" target="_blank">[1] &#34;How I learned to stop worrying about generics and love Go presentation&#34; by Krzysztof Dryś @ code::dive 2018</a></p><p class="link"><a href="https://golang.org/doc/faq#generics" target="_blank">[2] Go FAQ: Why does Go not have generic types?</a></p><p class="link"><a href="https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/" target="_blank">[3] Gopher demonstrates how easy it is to create a type safe Set data type in Go</a></p><p class="link"><a href="https://github.com/Juniper/contrail" target="_blank">[4] Juniper/contrail Github repository</a></p>
       
-      <div class="pagenumber">[25]</div>
+      <div class="pagenumber">[38]</div>
       </article>
   
   

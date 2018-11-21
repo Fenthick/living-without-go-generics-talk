@@ -8,6 +8,7 @@ Daniel Furman
 Software Developer, Codilime
 daniel.furman@codilime.com
 
+: Jest to moje pierwsze nietrywialne wystąpienie publiczne - proszę o informacje zwrotne
 : Prezentacja jest inspirowana wystąpieniem Krzysztofa Drysia na code::dive 2018
 
 * Agenda
@@ -24,15 +25,14 @@ No generic programming support in Go.
 
 "Generics are convenient but they come at a cost in complexity in the type system and run-time. We haven't yet found a design that gives value proportionate to the complexity, although we continue to think about it." [2]
 
+There are plans of introducing generics in Go 2.0
+
 : Go nie posiada kompletnego zestawu mechanizmów dla programowania generycznego
 : Zdaniem twórców Go dotychczas proponowane rozwiązania zbytnio zwiększały złożoność języka.
-: Prace nad wprowadzeniem tych mechanizmów do Go 2.0 trwają
 
 * Method 1
 
 - *Use*built-in*generic*constructs*
-
-: Go posiada elementy generyczne.
 
 * Built-in generics - map, slice, append
 
@@ -48,15 +48,16 @@ First variant of keys() function:
 Second variant of keys() function:
 .code -numbers code.go /built-ins2 OMIT/,/built-ins2# OMIT/
 
-TODO: explain why map, slice and append are generic
+- Map and slice allow to create multiple types - map and slice are generic
+- In both variants _for_ loop looks exactly the same - append is generic
 
 * Built-in generics
 
 Go has generic constructs:
 
-- types: map, slice, channel
-- functions: append()
-- new ones cannot be created
+- Types: map, slice, channel
+- Functions: len(), cap(), append(), copy(), close(), delete()
+- New ones cannot be created
 
 : Bazowanie na powyższych elementach jest często wystarczające.
 
@@ -73,10 +74,8 @@ io.Reader interface:
 os.File implements io.Reader interface:
 .code -numbers code.go /file OMIT/,/file# OMIT/
 
+Type implements interface, when it implements all its methods.
 Fact of implementing an interface is implicit.
-
-: Interfejs składa się z wielu metod.
-: Typ implementuje interfejs, gdy implementuje wszystkie jego metody.
 
 * Interfaces revised
 
@@ -135,9 +134,228 @@ Use sort.Slice() with function defined in-place:
 - Use interfaces
 - *Use*code*generation*
 
-* TODO Use code generation - case study
+* Use code generation - Juniper/contrail case study [4]
 
-Used a lot in [[https://github.com/Juniper/contrail][Juniper/contrail project]]
+.image ./images/contrail.png
+.caption [[https://github.com/Juniper/contrail][Juniper/contrail project]] renamed lately to Tungsten Fabric
+
+* Use code generation - Juniper/contrail case study [4]
+
+.image ./images/contrail2.png
+
+- It consists of multiple schema-driven components
+- Code generation from data model schema is first-class citizen here
+
+* Use code generation - Juniper/contrail case study [4]
+
+.image ./images/contrail3.png
+
+- Components deployed in production are contained in _contrail_ application
+- _contrailschema_ tool is used to generate code for other components
+
+* Use code generation - Juniper/contrail case study [4]
+
+Model of data (and more) is located in _schemas_ directory:
+
+	> tree schemas/
+	schemas/
+	├── abstract
+	│   ├── base_types.yml
+	│   ├── base.yml
+	│   └── has_status.yml
+	├── core
+	│   ├── access-control-list-schema.yml
+	│   ├── address-group-schema.yml
+	│   ├── alarm-schema.yml
+	│   ├── alias-ip-pool-schema.yml
+	│   ├── alias-ip-schema.yml
+	│   ├── analytics-node-schema.yml
+	│   ├── api-access-list-schema.yml
+	│   ├── application-policy-set-schema.yml
+    │   ├── bgp-as-a-service-schema.yml
+    │   ├── bgp-router-schema.yml
+    │   ├── bgpvpn-schema.yml
+    │   ├── bridge-domain-schema.yml
+    │   ├── card-schema.yml
+
+* Use code generation - Juniper/contrail case study [4]
+
+Schema has following properties:
+
+- id: unique schema ID
+- extends: list of abstract schemas that defined schema extends
+- parents: parent resources
+- references: many to many relations
+- prefix: REST API path prefix
+- schema: JSON Schema
+
+* Use code generation - Juniper/contrail case study [4]
+
+Virtual Network schema example (1/2):
+
+	extends:
+	- base
+	id: virtual_network
+	parents:
+	  project:
+		description: Virtual network is collection of end points (interface or ip(s) or
+		  MAC(s)) that can talk to each other by default. It is collection of subnets
+		  connected by implicit router which default gateway in each subnet.
+		operations: CRUD
+		presence: optional
+	plural: virtual_networks
+	prefix: /
+	references:
+	  network_ipam:
+		$ref: types.json#definitions/VnSubnetsType
+		description: Reference to network-ipam this network is using. It has list of subnets
+		  that are to be used as property of the reference.
+		operations: CRUD
+		presence: required
+	...
+
+* Use code generation - Juniper/contrail case study [4]
+
+Virtual Network schema example (2/2):
+
+	...
+	schema:
+	  properties:
+		external_ipam:
+		  description: IP address assignment to VM is done statically, outside of (external
+			to) Contrail Ipam. vCenter only feature.
+		  operations: CRUD
+		  presence: optional
+		  type: boolean
+		fabric_snat:
+		  default: false
+		  description: Provide connectivity to underlay network by port mapping
+		  operations: CRUD
+		  presence: optional
+		  type: boolean
+	  required: []
+	  type: object
+
+* Use code generation - Juniper/contrail case study [4]
+
+- Project uses [[https://github.com/flosch/pongo2][Pongo2 template engine]] which is based on [[https://docs.djangoproject.com/en/dev/ref/templates/language/][Django template language]] to generate Go code as well as _.proto_ definitions
+- _Protoc_ is used to generate models and GRPC-related code from generated _proto_ definitions
+- Pongo2 templates for code generation are stored in _template_ directory
+- Configuration of templates is specified in _template_config.yaml_
+
+.image ./images/pongo.png
+
+* Use code generation - Juniper/contrail case study [4]
+
+Templates in project:
+
+	> tree tools/templates/
+	tools/templates/
+	├── base_quota_counter.tmpl
+	├── base_quota_getter.tmpl
+	├── cachedb.tmpl
+	├── client.tmpl
+	├── db_common.tmpl
+	├── db_test.tmpl
+	├── db.tmpl
+	├── db_types.tmpl
+	├── etcdserviceif.tmpl
+	├── event_encoding.tmpl
+	├── list_response_encoding.tmpl
+	├── model.tmpl
+	├── proto_model.tmpl
+	├── proto_service.tmpl
+	├── quota_checker_service.tmpl
+	├── sanitizer_service.tmpl
+	├── service_common.tmpl
+	├── service_interface.tmpl
+	├── service.tmpl
+	├── sql_cleanup_mysql.tmpl
+
+* Use code generation - Juniper/contrail case study [4]
+
+_tools/templates/proto_model.tmpl_ file (~50 lines of template code):
+
+	{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+	message {{ schema.JSONSchema.GoName }} {
+	{%- for property in schema.JSONSchema.OrderedProperties %}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+	{%- endfor %}
+	{%- for linkTo, reference in schema.References %}
+		repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }}
+	{%- endfor %}
+	{%- for _, backref in schema.BackReferences %}
+		{% set linkTo = backref.LinkTo %}
+		repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_back_refs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_back_refs\""]; // {{ backref.Description }}
+	{%- endfor %}
+	{%- for backref in schema.Children %}
+		{% set child = backref.LinkTo %}
+		repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }}
+	{%- endfor %}
+	}
+
+	...
+
+* Use code generation - Juniper/contrail case study [4]
+
+_models/generated.proto_ file (~8000 lines):
+
+	message VirtualNetwork {
+		string uuid = 1 [(gogoproto.customname) = "UUID", (gogoproto.moretags) = "yaml:\"uuid\""]; // UUID of the object, system automatically allocates one if not provided
+		string name = 2 [(gogoproto.customname) = "Name", (gogoproto.moretags) = "yaml:\"name\""]; // Name of the object, defaults to &#39;default-&lt;resource-type&gt;&#39;
+		string parent_uuid = 3 [(gogoproto.customname) = "ParentUUID", (gogoproto.moretags) = "yaml:\"parent_uuid\""]; // UUID of the parent object
+		string parent_type = 4 [(gogoproto.customname) = "ParentType", (gogoproto.moretags) = "yaml:\"parent_type\""]; // Parent resource type
+		repeated string fq_name = 5 [(gogoproto.customname) = "FQName", (gogoproto.moretags) = "yaml:\"fq_name\""]; // FQ Name of the object
+		IdPermsType id_perms = 6 [(gogoproto.customname) = "IDPerms", (gogoproto.moretags) = "yaml:\"id_perms\""]; // System maintained identity, time  and permissions data.
+		string display_name = 7 [(gogoproto.customname) = "DisplayName", (gogoproto.moretags) = "yaml:\"display_name\""]; // Display name user configured string(name) that can be updated any time. Used as openstack name.
+		KeyValuePairs annotations = 8 [(gogoproto.customname) = "Annotations", (gogoproto.moretags) = "yaml:\"annotations\""]; // Dictionary of arbitrary (key, value) on a resource.
+		PermType2 perms2 = 9 [(gogoproto.customname) = "Perms2", (gogoproto.moretags) = "yaml:\"perms2\""]; // Permissions data for role based access.
+		int64 configuration_version = 10 [(gogoproto.customname) = "ConfigurationVersion", (gogoproto.moretags) = "yaml:\"configuration_version\""]; // Configuration Version for the object.
+		string address_allocation_mode = 11 [(gogoproto.customname) = "AddressAllocationMode", (gogoproto.moretags) = "yaml:\"address_allocation_mode\""]; // Address allocation mode for virtual network.
+		EcmpHashingIncludeFields ecmp_hashing_include_fields = 12 [(gogoproto.customname) = "EcmpHashingIncludeFields", (gogoproto.moretags) = "yaml:\"ecmp_hashing_include_fields\""]; // ECMP hashing config at global level.
+		RouteTargetList export_route_target_list = 13 [(gogoproto.customname) = "ExportRouteTargetList", (gogoproto.moretags) = "yaml:\"export_route_target_list\""]; // List of route targets that are used as export for this virtual network.
+		bool external_ipam = 14 [(gogoproto.customname) = "ExternalIpam", (gogoproto.moretags) = "yaml:\"external_ipam\""]; // IP address assignment to VM is done statically, outside of (external to) Contrail Ipam. vCenter only feature.
+		bool fabric_snat = 15 [(gogoproto.customname) = "FabricSnat", (gogoproto.moretags) = "yaml:\"fabric_snat\""]; // Provide connectivity to underlay network by port mapping
+		bool flood_unknown_unicast = 16 [(gogoproto.customname) = "FloodUnknownUnicast", (gogoproto.moretags) = "yaml:\"flood_unknown_unicast\""]; // When true, packets with unknown unicast MAC address are flooded within the network. Default they are dropped.
+		bool igmp_enable = 17 [(gogoproto.customname) = "IgmpEnable", (gogoproto.moretags) = "yaml:\"igmp_enable\""]; // IGMP mode at Global level.
+		RouteTargetList import_route_target_list = 18 [(gogoproto.customname) = "ImportRouteTargetList", (gogoproto.moretags) = "yaml:\"import_route_target_list\""]; // List of route targets that are used as import for this virtual network.
+		bool is_provider_network = 19 [(gogoproto.customname) = "IsProviderNetwork", (gogoproto.moretags) = "yaml:\"is_provider_network\""]; // provider network status of the virtual-network.
+		bool is_shared = 20 [(gogoproto.customname) = "IsShared", (gogoproto.moretags) = "yaml:\"is_shared\""]; // When true, this virtual network is shared with all tenants.
+
+* Use code generation - Juniper/contrail case study [4]
+
+_pkg/models/generated.pb.go_ file (~76000 lines of code):
+
+	type VirtualNetwork struct {
+		UUID                            string                                    `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty" yaml:"uuid"`
+		Name                            string                                    `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" yaml:"name"`
+		ParentUUID                      string                                    `protobuf:"bytes,3,opt,name=parent_uuid,json=parentUuid,proto3" json:"parent_uuid,omitempty" yaml:"parent_uuid"`
+		ParentType                      string                                    `protobuf:"bytes,4,opt,name=parent_type,json=parentType,proto3" json:"parent_type,omitempty" yaml:"parent_type"`
+		FQName                          []string                                  `protobuf:"bytes,5,rep,name=fq_name,json=fqName" json:"fq_name,omitempty" yaml:"fq_name"`
+		IDPerms                         *IdPermsType                              `protobuf:"bytes,6,opt,name=id_perms,json=idPerms" json:"id_perms,omitempty" yaml:"id_perms"`
+		DisplayName                     string                                    `protobuf:"bytes,7,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty" yaml:"display_name"`
+		Annotations                     *KeyValuePairs                            `protobuf:"bytes,8,opt,name=annotations" json:"annotations,omitempty" yaml:"annotations"`
+		Perms2                          *PermType2                                `protobuf:"bytes,9,opt,name=perms2" json:"perms2,omitempty" yaml:"perms2"`
+		ConfigurationVersion            int64                                     `protobuf:"varint,10,opt,name=configuration_version,json=configurationVersion,proto3" json:"configuration_version,omitempty" yaml:"configuration_version"`
+		AddressAllocationMode           string                                    `protobuf:"bytes,11,opt,name=address_allocation_mode,json=addressAllocationMode,proto3" json:"address_allocation_mode,omitempty" yaml:"address_allocation_mode"`
+		EcmpHashingIncludeFields        *EcmpHashingIncludeFields                 `protobuf:"bytes,12,opt,name=ecmp_hashing_include_fields,json=ecmpHashingIncludeFields" json:"ecmp_hashing_include_fields,omitempty" yaml:"ecmp_hashing_include_fields"`
+		ExportRouteTargetList           *RouteTargetList                          `protobuf:"bytes,13,opt,name=export_route_target_list,json=exportRouteTargetList" json:"export_route_target_list,omitempty" yaml:"export_route_target_list"`
+		ExternalIpam                    bool                                      `protobuf:"varint,14,opt,name=external_ipam,json=externalIpam,proto3" json:"external_ipam,omitempty" yaml:"external_ipam"`
+		FabricSnat                      bool                                      `protobuf:"varint,15,opt,name=fabric_snat,json=fabricSnat,proto3" json:"fabric_snat,omitempty" yaml:"fabric_snat"`
+		FloodUnknownUnicast             bool                                      `protobuf:"varint,16,opt,name=flood_unknown_unicast,json=floodUnknownUnicast,proto3" json:"flood_unknown_unicast,omitempty" yaml:"flood_unknown_unicast"`
+		IgmpEnable                      bool                                      `protobuf:"varint,17,opt,name=igmp_enable,json=igmpEnable,proto3" json:"igmp_enable,omitempty" yaml:"igmp_enable"`
+		ImportRouteTargetList           *RouteTargetList                          `protobuf:"bytes,18,opt,name=import_route_target_list,json=importRouteTargetList" json:"import_route_target_list,omitempty" yaml:"import_route_target_list"`
+		IsProviderNetwork               bool                                      `protobuf:"varint,19,opt,name=is_provider_network,json=isProviderNetwork,proto3" json:"is_provider_network,omitempty" yaml:"is_provider_network"`
+		IsShared                        bool                                      `protobuf:"varint,20,opt,name=is_shared,json=isShared,proto3" json:"is_shared,omitempty" yaml:"is_shared"`
+
+* Use code generation - Juniper/contrail case study summary
+
+- There are many more template files
+- In most cases it is simple Schema + Pongo template -> Go code generation path
+- Whole workflow is quite complex
+- Large Go files lead to long compilation times
+- *It*works* in the end
 
 * Method 4
 
@@ -146,9 +364,19 @@ Used a lot in [[https://github.com/Juniper/contrail][Juniper/contrail project]]
 - Use code generation
 - *Use*copy-paste*method*
 
-* TODO The copy-paste method
+* The copy-paste method
 
-TODO: "a little bit of copying..." quote
+- [[https://go-proverbs.github.io/][Go proverb]]: "_A_little_copying_is_better_than_a_little_dependency_"
+- Introducing code duplication is not always a bad idea
+
+: Jest to kopiowanie w innym kontekście
+
+* The copy-paste method
+
+Official Go wiki encourages copy-pasting for operations on slices:
+.image ./images/slice-tricks.png
+
+: Deweloper kopiuje kod i dostosowuje do współpracy z określonym typem
 
 * The copy-paste method - type-safe Set data type [3]
 
@@ -171,9 +399,11 @@ Not discussed today.
 
 - There are multiple ways to deal without proper generics support
 - Chosen method depends on circumstances
+- We are still waiting on proper generics support
 
 * References
 
 .link https://codedive.pl/index/speaker/name/krzysztof-drys [1] "How I learned to stop worrying about generics and love Go presentation" by Krzysztof Dryś @ code::dive 2018
 .link https://golang.org/doc/faq#generics [2] Go FAQ: Why does Go not have generic types?
 .link https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/ [3] Gopher demonstrates how easy it is to create a type safe Set data type in Go
+.link https://github.com/Juniper/contrail [4] Juniper/contrail Github repository
