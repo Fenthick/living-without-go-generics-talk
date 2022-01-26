@@ -157,8 +157,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="13">// keys returns slice of keys of given map.</span>
 <span num="14"><b>func keys(m map[string]int) []string {</b></span>
 <span num="15">    var keys []string</span>
@@ -169,8 +167,6 @@
 <span num="20">    return keys</span>
 <span num="21">}</span>
 </pre>
-
-
 </div>
 
       
@@ -190,8 +186,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="25">// keys2 returns slice of keys of given map.</span>
 <span num="26"><b>func keys2(m map[int]string) []int {</b></span>
 <span num="27">    var keys []int</span>
@@ -202,8 +196,6 @@
 <span num="32">    return keys</span>
 <span num="33">}</span>
 </pre>
-
-
 </div>
 
   <ul>
@@ -275,14 +267,10 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="37">type Reader interface {</span>
 <span num="38">    Read(p []byte) (n int, err error)</span>
 <span num="39">}</span>
 </pre>
-
-
 </div>
 
   
@@ -292,8 +280,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="43">type File struct {</span>
 <span num="44">    // ...</span>
 <span num="45">}</span>
@@ -302,8 +288,6 @@
 <span num="48">    // ...</span>
 <span num="50">}</span>
 </pre>
-
-
 </div>
 
   
@@ -332,16 +316,12 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="54"><b>func readAndDoSomething(f *os.File) {</b></span>
 <span num="55">    var b []byte</span>
 <span num="56">    n, err := f.Read(b)</span>
 <span num="57">    // do something</span>
 <span num="59">}</span>
 </pre>
-
-
 </div>
 
   
@@ -351,16 +331,12 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="63"><b>func readAndDoSomething2(f io.Reader) {</b></span>
 <span num="64">    var b []byte</span>
 <span num="65">    n, err := f.Read(b)</span>
 <span num="66">    // do something</span>
 <span num="68">}</span>
 </pre>
-
-
 </div>
 
   
@@ -386,8 +362,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="73">type Student struct{}</span>
 <span num="74"></span>
 <span num="75">func (s *Student) AverageScore() float64 {</span>
@@ -398,8 +372,6 @@
 <span num="81">    <b>// needs to be implemented</b></span>
 <span num="82">}</span>
 </pre>
-
-
 </div>
 
       
@@ -419,8 +391,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="87">type Interface interface {</span>
 <span num="88">    // Len is the number of elements in the collection.</span>
 <span num="89">    Len() int</span>
@@ -435,8 +405,6 @@
 <span num="98">    // implementation omitted</span>
 <span num="99">}</span>
 </pre>
-
-
 </div>
 
       
@@ -456,8 +424,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="104">type Students []Student</span>
 <span num="105"></span>
 <span num="106">func (s Students) Len() int {</span>
@@ -476,8 +442,6 @@
 <span num="119">    sort.Sort(Students(students))</span>
 <span num="120">}</span>
 </pre>
-
-
 </div>
 
   <ul>
@@ -521,16 +485,12 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="127">// Slice sorts the provided slice given the provided less function.</span>
 <span num="128">// The function panics if the provided interface is not a slice.</span>
 <span num="129">func Slice(slice interface{}, less func(i, j int) bool) {</span>
 <span num="130">    // implementation omitted</span>
 <span num="131">}</span>
 </pre>
-
-
 </div>
 
       
@@ -550,8 +510,6 @@
   
 
   <div class="code" contenteditable="true" spellcheck="false">
-
-
 <pre class="numbers"><span num="127">// Slice sorts the provided slice given the provided less function.</span>
 <span num="128">// The function panics if the provided interface is not a slice.</span>
 <span num="129">func Slice(slice interface{}, less func(i, j int) bool) {</span>
@@ -564,8 +522,6 @@
 <span num="137">    })</span>
 <span num="138">}</span>
 </pre>
-
-
 </div>
 
   <ul>

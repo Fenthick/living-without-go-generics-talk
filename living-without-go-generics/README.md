@@ -7,13 +7,13 @@ Static presentation is located in [publish/living-without-go-generics.html](publ
 Run dynamic presentation:
 
 ```shell
-go get -u golang.org/x/tools/cmd/present
+go install golang.org/x/tools/cmd/present
 present
 ```
 
-Render .slide to static HTML:
+Render slides to static HTML:
 
 ```shell
-go get -u github.com/cmars/represent
+go install github.com/cmars/represent
 represent
 ```
