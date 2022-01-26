@@ -1,0 +1,309 @@
+# Let's Go generic
+
+CodiLime Tech Talk  
+March 2022  
+Tags: Go, generics, types, interface, parametric polymorphism
+
+Daniel Furman  
+Software Engineer, CodiLime  
+daniel.furman@codilime.com
+gophers.slack.com: @danielfurman
+Github: @danielfurman
+Twitter: @danielfurman88
+LinkedIn: @danielfurman8
+
+## Agenda
+
+- Introduction
+- Generic programming substitutes (before Go 1.18)
+- History of Go generics
+- Dive into Go 1.18 type parameters
+- Use case: type-safe set implementation
+- Generics usage recommendations
+- Future of Go generics
+
+## Introduction
+
+- Generic programming enables the representation of functions and data structures in a generic form, with types factored out [30]
+- Go 1.18 brings generic programming mechanism - type parameters
+
+: Programowanie generyczne to takie, w którym funkcje lub typy działają z wieloma typami.
+: Konkretny używany typ jest określony później w czasie wywołania funkcji lub inicjalizacji obiektu.
+
+## Generic programming substitutes (before Go 1.18)
+
+Go has generic constructs:
+
+- Types: slice, map, channel
+- Functions: append(), copy(), delete(), len(), cap(), make(), new(), complex(), real(), imag(), close(), print(), println()
+
+One can not define custom generic types/functions
+
+[//]: # (// TODO: func and interface?)
+
+## Generic programming substitutes (before Go 1.18)
+
+Approaches we had so far:
+
+- Manual code duplication
+- Code duplication via code generation
+- Operating on empty interfaces (`interface{}`)
+- Operating on defined interfaces
+- Reflections
+
+Each approach has its own disadvantages
+
+## Generic programming substitutes - examples
+
+Task: implement function returning maximum number in given slice
+
+## Manual code duplication (1/2)
+
+.code max.go /max-int OMIT/,/max-int# OMIT/
+
+## Manual code duplication (2/2)
+
+.code max.go /max-float64 OMIT/,/max-float64# OMIT/
+
+## Manual code duplication
+
+Key disadvantages:
+
+- Lots of manual labour
+- Code duplication lowers maintainability
+
+[//]: # (TODO: add honest work meme)
+
+## Code generation
+
+- We can automate such code duplication via code generation
+- There are even tools for that, e.g. [https://github.com/cheekybits/genny](https://github.com/cheekybits/genny)
+
+Key disadvantages:
+
+- It complicates project build
+- It increases compilation times
+
+## Operating on empty interfaces (1/3)
+
+.code max.go /max-number1 OMIT/,/max-number1# OMIT/
+
+## Operating on empty interfaces (2/3)
+
+.code max.go /max-number2 OMIT/,/max-number2# OMIT/
+
+## Operating on empty interfaces (3/3)
+
+.code max.go /max-number-usage OMIT/,/max-number-usage# OMIT/
+
+Key disadvantages:
+
+- Losing type-safety
+- Type assertions everywhere
+
+[//]: # (TODO: add everywhere meme)
+
+## Operating on defined interfaces (1/2)
+
+[//]: # (TODO: do custom example with Max)
+
+.code sort.go /sort OMIT/,/sort# OMIT/
+
+: Jest to przykład z biblioteki standardowej
+
+## Operating on defined interfaces (2/2)
+
+.code sort.go /sort-usage OMIT/,/sort-usage# OMIT/
+
+Key disadvantages:
+
+- Hard to use: requires defining custom types implementing specific methods
+
+## Reflections
+
+[//]: # (TODO: Reflections - MaxNumber example)
+
+Key disadvantages:
+
+- low readability
+- lower performance
+
+## History of Go generics
+
+> "Generics are convenient, but they come at a cost in complexity in the type system and run-time.
+> We haven't yet found a design that gives value proportionate to the complexity, although we continue to think about it." - Go FAQ [1]
+
+## History of Go generics
+
+- 2007-09 - Go language idea
+- 2009-11 - Go became a public open source project
+- 2010-06 - Type functions proposal (#15292)
+- 2011-03 - Generalized types proposal (#15292)
+- 2012-03 - Go 1.0 release
+- 2013-10 - Generalized types proposal II (#15292)
+- 2013-12 - Type parameters proposal (old, #15292)
+- 2016-09 - Compile-time Functions and First Class Types proposal
+- 2018-08 - Go 2 Draft Designs containing generics with contracts
+- 2020-06 - Type parameters draft design
+- 2021-03 - Type parameters proposal (#43651)
+- 2022-03 - Go 1.18 release
+
+: Poprzednie propozycje okazywały się zbyt skomplikowane w implementacji i użyciu.
+: Propozycja z 2018 zawierała koncepcję kontraktu, który definiował wymagania dla jednej lub więcej typu-uznano to za zbyt skomplikowane.
+: W propozycji z 2018 używano zwykłych nawiasów do przekazywania argumentów typu, co "zlewało" się z ze zwykłymi argumentami - było nieczytelne.
+
+## Type parameters - Max() example
+
+.code max.go /max-generic OMIT/,/max-generic# OMIT/
+
+## Type parameters fundamentals
+
+```go
+func Max[T constraints.Ordered](s []T) T {}
+m1 := Max[int]([]int{4, -8, 15})
+```
+
+Type parameters fundamentals [21, 22]:
+
+- Each type parameter has a type constraint that acts as a kind of meta-type for the type parameter.
+- Each type constraint specifies the permissible type arguments that calling code can use for the respective type parameter.
+- At compile time the type parameter stands for a single type – the type provided as a type argument by the calling code.
+- A type argument is valid if it implements type parameter's constraint.
+
+: 1. Każdy parametr typu ma określone constraint.
+: 2. Constraint określa możliwe argumenty typu, które kod wywołujący może użyć.
+: 3. W czasie kompilacji parametr typu jest określony przez argument typu podany przez kod wywołujący.
+: 4. Argument typu jest poprawny, gdy implementuje constraint parametru typu. W przeciwnym wypadku kod się nie skompiluje.
+: 5. Specjalizacja argumentu typu nie zawsze jest potrzebna, bo kompilator potrafi go wydedukować z parametrów funkcji.
+
+## Type constraints fundamentals (1/2)
+
+- Type constraints are declared as an interface containing methods or union of types
+- The constraint allows any type satisfying the interface
+- `~T` means that named types derived from `T` are accepted
+
+.code misc.go /stringable-float OMIT/,/stringable-float# OMIT/
+
+## Type constraints fundamentals (2/2)
+
+.code misc.go /stringable-float-usage OMIT/,/stringable-float-usage# OMIT/
+
+## Generic type constraints
+
+[//]: # (TODO: add example of generic type constraint, e.g. lesser)
+
+## Built-in type constraints:
+
+Built-in type constraints:
+
+- any - alias for interface{}
+- comparable - any type whose values may be used as an operand of the comparison operators == and != (booleans, numbers, strings, pointers, channels, interfaces, arrays of comparable types, structs whose fields are all comparable types)
+
+Constraints defined in package constraints:
+
+- Signed - `~int | ~int8 | ~int16 | ~int32 | ~int64`
+- Unsigned - `~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr`
+- Integer - `Signed | Unsigned`
+- Float - `~float32 | ~float64`
+- Complex - `~complex64 | ~complex128`
+- Ordered - `Integer | Float | ~string` (any type that supports the operators < <= >= >)
+
+## Use case: type-safe set implementation
+
+Task: implement set data structure
+
+## Use case: type-safe set implementation (1/6)
+
+.code set.go /set1 OMIT/,/set1# OMIT/
+
+## Use case: type-safe set implementation (2/6)
+
+.code set.go /set2 OMIT/,/set2# OMIT/
+
+## Use case: type-safe set implementation (3/6)
+
+.code set.go /set3 OMIT/,/set3# OMIT/
+
+## Use case: type-safe set implementation (4/6)
+
+.code set.go /set4 OMIT/,/set4# OMIT/
+
+## Use case: type-safe set implementation (5/6)
+
+.code set.go /set5 OMIT/,/set5# OMIT/
+
+## Use case: type-safe set implementation (6/6)
+
+.code set.go /set-usage OMIT/,/set-usage# OMIT/
+
+## Generics usage recommendations
+
+Use cases for generics [30]:
+
+- functions calculating max/min/average/mode/standard deviation of elements in a slice or maps
+- transformation functions for slices or maps
+- generic data structures, e.g. set, multimap, concurrent hash map, graph, tree, linked list with appropriate generic methods
+- functions operating on channels, e.g. combine two channels into single channel
+- functions operating on functions, e.g. call given functions in parallel and return a slice of results
+
+## When not to use generics
+
+[//]: # (TODO)
+
+## Future of Go generics
+
+[//]: # (TODO)
+
+- Growing number of libraries using generics:
+    - [github.com/mikhailswift/go-collections](https://github.com/mikhailswift/go-collections) 
+    - [github.com/johnmurray/typed](https://github.com/johnmurray/typed)
+- Go 1.19 (~08.2022): stdlib packages to use generics:
+    - [github.com/golang/exp/constraints](https://github.com/golang/exp/tree/master/constraints) 
+    - [github.com/golang/exp/maps](https://github.com/golang/exp/tree/master/maps) 
+    - [github.com/golang/exp/slices](https://github.com/golang/exp/tree/master/slices)
+
+## Summary
+
+- Arguably the biggest shortcoming of Go is going to be resolved soon
+- Type parameters is powerful feature, but can (and will) be overused
+- There was never better time to give Go a go
+
+## References (1/4)
+
+.link https://github.com/golang/proposal/blob/master/design/15292-generics.md [1] Proposal: Go should have generics (2011-01)  
+.link https://github.com/golang/proposal/blob/master/design/15292/2010-06-type-functions.md [2] Type Functions Proposal (2010-06)  
+.link https://github.com/golang/proposal/blob/master/design/15292/2011-03-gen.md [3] Proposal: Generalized Types (2011-03)  
+.link https://github.com/golang/proposal/blob/master/design/15292/2013-10-gen.md [4] Proposal: Generalized Types II (2013-10)  
+.link https://github.com/golang/proposal/blob/master/design/15292/2013-12-type-params.md [5] Proposal: Type Parameters (2013-12)  
+.link https://github.com/golang/proposal/blob/master/design/15292/2016-09-compile-time-functions.md [6] Proposal: Compile-time Functions and First Class Types (2016-09)  
+.link https://github.com/golang/proposal/blob/master/design/go2draft-generics-overview.md [7] Generics — Problem Overview (2018-08)  
+.link https://github.com/golang/proposal/blob/master/design/go2draft-contracts.md [8] Draft Design: Contracts 2018-08  
+.link https://github.com/golang/proposal/blob/master/design/43651-type-parameters.md [9] Proposal: Type Parameters (2021-03)  
+.link https://github.com/golang/proposal/blob/master/design/44253-generic-array-sizes.md [10] Proposal: Generic parameterization of array sizes (2021-03)
+
+## References (2/4)
+
+.link https://github.com/golang/proposal/blob/master/design/47781-parameterized-go-ast.md [11] Proposal: Additions to go/ast and go/token to support parameterized functions and types (2021-08)  
+.link https://github.com/golang/proposal/blob/master/design/47916-parameterized-go-types.md [12] Proposal: Additions to go/types to support type parameters (2021-08)  
+.link https://docs.google.com/document/d/1vrAy9gMpMoS3uaVphB32uVXX4pi-HnNjkMEgyAHX4N4/preview [13] Summary of Go Generics Discussions  
+.link https://github.com/golang/go/issues/43651 [14] spec: add generic programming using type parameters #43651 (Jan 12, 2021)  
+.link https://github.com/golang/go/issues/45346 [15]  spec: generics: use type sets to remove type keyword in constraints #45346 (Apr 2021)
+
+## References (3/4)
+
+.link https://go.dev/doc/faq#generics [20] Go FAQ: Why does Go not have generic types?  
+.link https://go.dev/doc/tutorial/generics [21] Tutorial: Getting started with generics  
+.link https://github.com/golang/go/wiki/Go2GenericsFeedback [22] Go 2 Generics Feedback  
+.link https://github.com/golang/go/wiki/Go2 [23] Go2 status  
+.link https://tip.golang.org/doc/go1.18 [24] Go 1.18 Release Notes  
+.link https://github.com/golang/go/discussions/48287 [25] how to update APIs for generics #48287  
+.link https://groups.google.com/g/golang-dev/c/iuB22_G9Kbo/m/7B1jd1I3BQAJ [26] Expectations for generics in Go 1.18
+
+## References (4/4)
+
+.link https://www.youtube.com/watch?v=WzgLqE-3IhY [30] GopherCon 2019: Ian Lance Taylor -Generics in Go  
+.link https://www.youtube.com/watch?v=TborQFPY2IM [31] GopherCon 2020: Robert Griesemer - Typing Generic Go  
+.link https://www.youtube.com/watch?v=Pa_e9EeCdy8 [32] GopherCon 2021: Robert Griesemer & Ian Lance Taylor - Generics!  
+.link https://www.youtube.com/watch?v=uh5pXt6d1nE& [33] Golang Poland #4 - Bill Kennedy - Generics Draft Proposal Review  
+.link https://www.youtube.com/watch?v=nr8EpUO9jhw [34] Go Day 2021 on Google Open Source Live | Using Generics in Go  
+.link https://github.com/ardanlabs/gotraining/tree/master/topics/go/generics [35] github.com/ardanlabs/gotraining - generics  

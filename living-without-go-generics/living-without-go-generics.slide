@@ -1,15 +1,15 @@
 # Living without Go generics
 
-Go! Academy
-21 November 2018
+Go! Academy  
+21 November 2018  
 Tags: Go, generics, interface, code generation
 
-Daniel Furman
-Software Developer, CodiLime
+Daniel Furman  
+Software Engineer, CodiLime  
 daniel.furman@codilime.com
 
-: Jest to moje pierwsze nietrywialne wystąpienie publiczne —  proszę o informacje zwrotne
-: Prezentacja jest inspirowana wystąpieniem Krzysztofa Drysia na code::dive 2018
+: Jest to moje pierwsze nietrywialne wystąpienie publiczne — proszę o informacje zwrotne.
+: Prezentacja jest inspirowana wystąpieniem Krzysztofa Drysia na code::dive 2018.
 
 ## Agenda
 
@@ -27,7 +27,7 @@ No generic programming support in Go.
 
 There are plans of introducing generics in Go 2.0
 
-: Go nie posiada kompletnego zestawu mechanizmów dla programowania generycznego
+: Go nie posiada kompletnego zestawu mechanizmów dla programowania generycznego.
 : Zdaniem twórców Go dotychczas proponowane rozwiązania zbytnio zwiększały złożoność języka.
 
 ## Method 1
@@ -42,15 +42,15 @@ Task: implement function that returns keys of given map.
 
 First variant of keys() function:
 
-.code -numbers code.go /built-ins OMIT/,/built-ins# OMIT/
+.code code.go /built-ins OMIT/,/built-ins# OMIT/
 
 ## Built-in generics - map, slice, append
 
 Second variant of keys() function:
 
-.code -numbers code.go /built-ins2 OMIT/,/built-ins2# OMIT/
+.code code.go /built-ins2 OMIT/,/built-ins2# OMIT/
 
-- Map and slice allow to create multiple types - map and slice are generic
+- Map and slice allow creating multiple types - map and slice are generic
 - In both variants _for_ loop looks exactly the same - append is generic
 
 ## Built-in generics
@@ -72,24 +72,24 @@ Go has generic constructs:
 
 io.Reader interface:
 
-.code -numbers code.go /reader OMIT/,/reader# OMIT/
+.code code.go /reader OMIT/,/reader# OMIT/
 
 os.File implements io.Reader interface:
 
-.code -numbers code.go /file OMIT/,/file# OMIT/
+.code code.go /file OMIT/,/file# OMIT/
 
-Type implements interface, when it implements all its methods.
-Fact of implementing an interface is implicit.
+- Type implements interface, when it implements all its methods.
+- Fact of implementing an interface is implicit.
 
 ## Interfaces revised
 
 Concrete type passed:
 
-.code -numbers code.go /file usage OMIT/,/file usage# OMIT/
+.code code.go /file usage OMIT/,/file usage# OMIT/
 
 Interface passed:
 
-.code -numbers code.go /file usage2 OMIT/,/file usage2# OMIT/
+.code code.go /file usage2 OMIT/,/file usage2# OMIT/
 
 `read()` accepts all io.Readers now - it is more general and reusable.
 
@@ -97,19 +97,19 @@ Interface passed:
 
 Task: sort students by average score:
 
-.code -numbers code.go /student OMIT/,/student# OMIT/
+.code code.go /student OMIT/,/student# OMIT/
 
 ## Use interfaces - sorting with sort.Interface [1]
 
 sort.Sort() accepts objects by sort.Interface:
 
-.code -numbers code.go /sort OMIT/,/sort# OMIT/
+.code code.go /sort OMIT/,/sort# OMIT/
 
 ## Use interfaces - sorting with sort.Interface [1]
 
 Create Students type that implements sort.Interface and use it:
 
-.code -numbers code.go /sort solution OMIT/,/sort solution# OMIT/
+.code code.go /sort solution OMIT/,/sort solution# OMIT/
 
 - It is type-safe
 - Solution requires a bit of boilerplate
@@ -122,13 +122,13 @@ There is other way to do that.
 
 sort.Slice() algorithm:
 
-.code -numbers code.go /slice OMIT/,/slice# OMIT/
+.code code.go /slice OMIT/,/slice# OMIT/
 
 ## Use interfaces - sorting with sort.Slice() [1]
 
 Use sort.Slice() with function defined in-place:
 
-.code -numbers code.go /sort2 OMIT/,/sort2# OMIT/
+.code code.go /sort2 OMIT/,/sort2# OMIT/
 
 - It is type-safe except first argument
 - Code is short - there is no boilerplate
@@ -147,7 +147,7 @@ Use sort.Slice() with function defined in-place:
 
 ## Use code generation - Juniper/contrail case study [4]
 
-.image ./images/contrail.png
+.image ./images/contrail.png  
 .caption [Juniper/contrail project](https://github.com/Juniper/contrail) renamed lately to Tungsten Fabric
 
 ## Use code generation - Juniper/contrail case study [4]
@@ -191,7 +191,7 @@ Model of data (and more) is located in _schemas_ directory:
 
 ## Use code generation - Juniper/contrail case study [4]
 
-Schema has following properties:
+Schema has the following properties:
 
 - id: unique schema ID
 - extends: list of abstract schemas that defined schema extends
@@ -415,7 +415,7 @@ Not discussed today.
 
 ## References
 
-.link https://codedive.pl/index/speaker/name/krzysztof-drys [1] "How I learned to stop worrying about generics and love Go presentation" by Krzysztof Dryś @ code::dive 2018
-.link https://golang.org/doc/faq#generics [2] Go FAQ: Why does Go not have generic types?
-.link https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/ [3] Gopher demonstrates how easy it is to create a type safe Set data type in Go
-.link https://github.com/Juniper/contrail [4] Juniper/contrail GitHub repository
+.link https://codedive.pl/index/speaker/name/krzysztof-drys [1] "How I learned to stop worrying about generics and love Go presentation" by Krzysztof Dryś @ code::dive 2018  
+.link https://golang.org/doc/faq#generics [2] Go FAQ: Why does Go not have generic types?  
+.link https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/ [3] Gopher demonstrates how easy it is to create a type safe Set data type in Go  
+.link https://github.com/Juniper/contrail [4] Juniper/contrail GitHub repository  

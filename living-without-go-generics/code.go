@@ -10,6 +10,7 @@ import (
 func main() {}
 
 // built-ins OMIT
+
 // keys returns slice of keys of given map.
 func keys(m map[string]int) []string { // HL
 	var keys []string
@@ -19,9 +20,10 @@ func keys(m map[string]int) []string { // HL
 
 	return keys
 }
-// built-ins# OMIT
 
+// built-ins# OMIT
 // built-ins2 OMIT
+
 // keys2 returns slice of keys of given map.
 func keys2(m map[int]string) []int { // HL
 	var keys []int
@@ -31,15 +33,17 @@ func keys2(m map[int]string) []int { // HL
 
 	return keys
 }
-// built-ins2# OMIT
 
+// built-ins2# OMIT
 // reader OMIT
+
 type Reader interface {
 	Read(p []byte) (n int, err error)
 }
-// reader# OMIT
 
+// reader# OMIT
 // file OMIT
+
 type File struct {
 	// ...
 }
@@ -48,26 +52,28 @@ func (f *File) Read(b []byte) (n int, err error) {
 	// ...
 	return 0, nil // OMIT
 }
-// file# OMIT
 
+// file# OMIT
 // file usage OMIT
+
 func readAndDoSomething(f *os.File) { // HL
 	var b []byte
 	n, err := f.Read(b)
 	// do something
 	fmt.Print(n, err) // OMIT
 }
-// file usage# OMIT
 
+// file usage# OMIT
 // file usage2 OMIT
+
 func readAndDoSomething2(f io.Reader) { // HL
 	var b []byte
 	n, err := f.Read(b)
 	// do something
 	fmt.Print(n, err) // OMIT
 }
-// file usage2# OMIT
 
+// file usage2# OMIT
 // student OMIT
 
 type Student struct{}
@@ -82,8 +88,8 @@ func sortStudentsByAverageScore(students []Student) {
 }
 
 // student# OMIT
-
 // sort OMIT
+
 type Interface interface {
 	// Len is the number of elements in the collection.
 	Len() int
@@ -97,8 +103,8 @@ type Interface interface {
 func Sort(data sort.Interface) {
 	// implementation omitted
 }
-// sort# OMIT
 
+// sort# OMIT
 // sort solution OMIT
 
 type Students []Student
@@ -120,7 +126,6 @@ func sortStudentsByAverageScore2(students []Student) {
 }
 
 // sort solution# OMIT
-
 // sort2 OMIT
 // slice OMIT
 
@@ -129,6 +134,7 @@ func sortStudentsByAverageScore2(students []Student) {
 func Slice(slice interface{}, less func(i, j int) bool) {
 	// implementation omitted
 }
+
 // slice# OMIT
 
 func sortStudentsByAverageScore3(students []Student) {
@@ -136,4 +142,5 @@ func sortStudentsByAverageScore3(students []Student) {
 		return students[i].AverageScore() < students[j].AverageScore()
 	})
 }
+
 // sort2# OMIT
