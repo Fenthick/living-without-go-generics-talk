@@ -1,6 +1,6 @@
 # Living without Go generics talk
 
-Created with [Present tool](https://godoc.org/golang.org/x/tools/cmd/present).
+Created with [Present tool](https://pkg.go.dev/golang.org/x/tools/cmd/present).
 
 Static presentation is located in [publish/living-without-go-generics.html](publish/living-without-go-generics.html).
 

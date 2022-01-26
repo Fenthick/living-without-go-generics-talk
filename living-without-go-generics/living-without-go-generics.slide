@@ -1,17 +1,17 @@
-Living without Go generics
+# Living without Go generics
 
 Go! Academy
 21 November 2018
 Tags: Go, generics, interface, code generation
 
 Daniel Furman
-Software Developer, Codilime
+Software Developer, CodiLime
 daniel.furman@codilime.com
 
-: Jest to moje pierwsze nietrywialne wystąpienie publiczne - proszę o informacje zwrotne
+: Jest to moje pierwsze nietrywialne wystąpienie publiczne —  proszę o informacje zwrotne
 : Prezentacja jest inspirowana wystąpieniem Krzysztofa Drysia na code::dive 2018
 
-* Agenda
+## Agenda
 
 - Built-in generic constructs
 - Go interfaces
@@ -19,39 +19,41 @@ daniel.furman@codilime.com
 - Copy-paste method
 - Summary
 
-* Problem
+## Problem
 
 No generic programming support in Go.
 
-"Generics are convenient but they come at a cost in complexity in the type system and run-time. We haven't yet found a design that gives value proportionate to the complexity, although we continue to think about it." [2]
+"Generics are convenient, but they come at a cost in complexity in the type system and run-time. We haven't yet found a design that gives value proportionate to the complexity, although we continue to think about it." [2]
 
 There are plans of introducing generics in Go 2.0
 
 : Go nie posiada kompletnego zestawu mechanizmów dla programowania generycznego
 : Zdaniem twórców Go dotychczas proponowane rozwiązania zbytnio zwiększały złożoność języka.
 
-* Method 1
+## Method 1
 
-- *Use*built-in*generic*constructs*
+- **Use built-in generic constructs**
 
-* Built-in generics - map, slice, append
+## Built-in generics - map, slice, append
 
 Task: implement function that returns keys of given map.
 
-* Built-in generics - map, slice, append
+## Built-in generics - map, slice, append
 
 First variant of keys() function:
+
 .code -numbers code.go /built-ins OMIT/,/built-ins# OMIT/
 
-* Built-in generics - map, slice, append
+## Built-in generics - map, slice, append
 
 Second variant of keys() function:
+
 .code -numbers code.go /built-ins2 OMIT/,/built-ins2# OMIT/
 
 - Map and slice allow to create multiple types - map and slice are generic
 - In both variants _for_ loop looks exactly the same - append is generic
 
-* Built-in generics
+## Built-in generics
 
 Go has generic constructs:
 
@@ -61,99 +63,108 @@ Go has generic constructs:
 
 : Bazowanie na powyższych elementach jest często wystarczające.
 
-* Method 2
+## Method 2
 
 - Use built-in generic constructs
-- *Use*interfaces*
+- **Use interfaces**
 
-* Interfaces revised
+## Interfaces revised
 
 io.Reader interface:
+
 .code -numbers code.go /reader OMIT/,/reader# OMIT/
 
 os.File implements io.Reader interface:
+
 .code -numbers code.go /file OMIT/,/file# OMIT/
 
 Type implements interface, when it implements all its methods.
 Fact of implementing an interface is implicit.
 
-* Interfaces revised
+## Interfaces revised
 
 Concrete type passed:
+
 .code -numbers code.go /file usage OMIT/,/file usage# OMIT/
 
 Interface passed:
+
 .code -numbers code.go /file usage2 OMIT/,/file usage2# OMIT/
 
 `read()` accepts all io.Readers now - it is more general and reusable.
 
-* Use interfaces - sorting [1]
+## Use interfaces - sorting [1]
 
 Task: sort students by average score:
+
 .code -numbers code.go /student OMIT/,/student# OMIT/
 
-* Use interfaces - sorting with sort.Interface [1]
+## Use interfaces - sorting with sort.Interface [1]
 
 sort.Sort() accepts objects by sort.Interface:
+
 .code -numbers code.go /sort OMIT/,/sort# OMIT/
 
-* Use interfaces - sorting with sort.Interface [1]
+## Use interfaces - sorting with sort.Interface [1]
 
 Create Students type that implements sort.Interface and use it:
+
 .code -numbers code.go /sort solution OMIT/,/sort solution# OMIT/
 
 - It is type-safe
 - Solution requires a bit of boilerplate
 
-* Use interfaces - sorting
+## Use interfaces - sorting
 
 There is other way to do that.
 
-* Use interfaces - sorting with sort.Slice() [1]
+## Use interfaces - sorting with sort.Slice() [1]
 
 sort.Slice() algorithm:
+
 .code -numbers code.go /slice OMIT/,/slice# OMIT/
 
-* Use interfaces - sorting with sort.Slice() [1]
+## Use interfaces - sorting with sort.Slice() [1]
 
 Use sort.Slice() with function defined in-place:
+
 .code -numbers code.go /sort2 OMIT/,/sort2# OMIT/
 
 - It is type-safe except first argument
 - Code is short - there is no boilerplate
 
-* Use interfaces - sorting with sort.Slice()
+## Use interfaces - sorting with sort.Slice()
 
 - Package sort contains more general-purpose algorithms: SliceStable(), SliceIsSorted(), Search()
 - Those algorithms could be used for custom types
 - One can implement more such general-purpose algorithms
 
-* Method 3
+## Method 3
 
 - Use built-in generic constructs
 - Use interfaces
-- *Use*code*generation*
+- **Use code generation**
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 .image ./images/contrail.png
-.caption [[https://github.com/Juniper/contrail][Juniper/contrail project]] renamed lately to Tungsten Fabric
+.caption [Juniper/contrail project](https://github.com/Juniper/contrail) renamed lately to Tungsten Fabric
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 .image ./images/contrail2.png
 
 - It consists of multiple schema-driven components
 - Code generation from data model schema is first-class citizen here
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 .image ./images/contrail3.png
 
 - Components deployed in production are contained in _contrail_ application
 - _contrailschema_ tool is used to generate code for other components
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 Model of data (and more) is located in _schemas_ directory:
 
@@ -178,7 +189,7 @@ Model of data (and more) is located in _schemas_ directory:
     │   ├── bridge-domain-schema.yml
     │   ├── card-schema.yml
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 Schema has following properties:
 
@@ -189,7 +200,7 @@ Schema has following properties:
 - prefix: REST API path prefix
 - schema: JSON Schema
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 Virtual Network schema example (1/2):
 
@@ -214,7 +225,7 @@ Virtual Network schema example (1/2):
 		presence: required
 	...
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 Virtual Network schema example (2/2):
 
@@ -236,16 +247,16 @@ Virtual Network schema example (2/2):
 	  required: []
 	  type: object
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
-- Project uses [[https://github.com/flosch/pongo2][Pongo2 template engine]] which is based on [[https://docs.djangoproject.com/en/dev/ref/templates/language/][Django template language]] to generate Go code as well as _.proto_ definitions
+- Project uses [Pongo2 template engine](https://github.com/flosch/pongo2) which is based on [Django template language](https://docs.djangoproject.com/en/dev/ref/templates/language/) to generate Go code as well as _.proto_ definitions
 - _Protoc_ is used to generate models and GRPC-related code from generated _proto_ definitions
 - Pongo2 templates for code generation are stored in _template_ directory
 - Configuration of templates is specified in _template_config.yaml_
 
 .image ./images/pongo.png
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 Templates in project:
 
@@ -272,7 +283,7 @@ Templates in project:
 	├── service.tmpl
 	├── sql_cleanup_mysql.tmpl
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 _tools/templates/proto_model.tmpl_ file (~50 lines of template code):
 
@@ -297,7 +308,7 @@ _tools/templates/proto_model.tmpl_ file (~50 lines of template code):
 
 	...
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 _models/generated.proto_ file (~8000 lines):
 
@@ -323,7 +334,7 @@ _models/generated.proto_ file (~8000 lines):
 		bool is_provider_network = 19 [(gogoproto.customname) = "IsProviderNetwork", (gogoproto.moretags) = "yaml:\"is_provider_network\""]; // provider network status of the virtual-network.
 		bool is_shared = 20 [(gogoproto.customname) = "IsShared", (gogoproto.moretags) = "yaml:\"is_shared\""]; // When true, this virtual network is shared with all tenants.
 
-* Use code generation - Juniper/contrail case study [4]
+## Use code generation - Juniper/contrail case study [4]
 
 _pkg/models/generated.pb.go_ file (~76000 lines of code):
 
@@ -349,61 +360,62 @@ _pkg/models/generated.pb.go_ file (~76000 lines of code):
 		IsProviderNetwork               bool                                      `protobuf:"varint,19,opt,name=is_provider_network,json=isProviderNetwork,proto3" json:"is_provider_network,omitempty" yaml:"is_provider_network"`
 		IsShared                        bool                                      `protobuf:"varint,20,opt,name=is_shared,json=isShared,proto3" json:"is_shared,omitempty" yaml:"is_shared"`
 
-* Use code generation - Juniper/contrail case study summary
+## Use code generation - Juniper/contrail case study summary
 
 - There are many more template files
 - In most cases it is simple Schema + Pongo template -> Go code generation path
 - Whole workflow is quite complex
 - Large Go files lead to long compilation times
-- *It*works* in the end
+- **It works** in the end
 
-* Method 4
+## Method 4
 
 - Use built-in generic constructs
 - Use interfaces
 - Use code generation
-- *Use*copy-paste*method*
+- **Use copy-paste method**
 
-* The copy-paste method
+## The copy-paste method
 
-- [[https://go-proverbs.github.io/][Go proverb]]: "_A_little_copying_is_better_than_a_little_dependency_"
+- [Go proverb](https://go-proverbs.github.io/): "_A_little_copying_is_better_than_a_little_dependency_"
 - Introducing code duplication is not always a bad idea
 
 : Jest to kopiowanie w innym kontekście
 
-* The copy-paste method
+## The copy-paste method
 
 Official Go wiki encourages copy-pasting for operations on slices:
+
 .image ./images/slice-tricks.png
 
 : Deweloper kopiuje kod i dostosowuje do współpracy z określonym typem
 
-* The copy-paste method - type-safe Set data type [3]
+## The copy-paste method - type-safe Set data type [3]
 
 .image https://i.imgur.com/pxJetc3.gif
 
-: Metoda ta może się wydawać absurdalna - można znaleźć wiele ironicznych opinii na jej temat.
+: Metoda ta może się wydawać absurdalna — można znaleźć wiele ironicznych opinii na jej temat.
 : Przykład tworzenia typu PersonSet dla struktury Set
 
-* Method 5
+## Method 5
 
 - Use built-in generic constructs
 - Use interfaces
 - Use code generation
 - Use copy-paste method
-- *Use*reflections*
+- **Use reflections**
 
 Not discussed today.
 
-* Summary
+## Summary
 
 - There are multiple ways to deal without proper generics support
 - Chosen method depends on circumstances
 - We are still waiting on proper generics support
 
-* References
+## References
 
 .link https://codedive.pl/index/speaker/name/krzysztof-drys [1] "How I learned to stop worrying about generics and love Go presentation" by Krzysztof Dryś @ code::dive 2018
 .link https://golang.org/doc/faq#generics [2] Go FAQ: Why does Go not have generic types?
 .link https://www.reddit.com/r/programmingcirclejerk/comments/6i8yi4/gif_gopher_demonstrates_how_easy_it_is_to_create/ [3] Gopher demonstrates how easy it is to create a type safe Set data type in Go
-.link https://github.com/Juniper/contrail [4] Juniper/contrail Github repository
+.link https://github.com/Juniper/contrail [4] Juniper/contrail GitHub repository
