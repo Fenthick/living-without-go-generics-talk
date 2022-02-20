@@ -37,9 +37,11 @@ Go has generic constructs:
 - Types: slice, map, channel
 - Functions: append(), copy(), delete(), len(), cap(), make(), new(), complex(), real(), imag(), close(), print(), println()
 
-One can not define custom generic types/functions
+What about custom generic types/functions?
 
-[//]: # (// TODO: func and interface?)
+## 
+
+.background ./images/one-simply-does-not.jpg
 
 ## Generic programming substitutes (before Go 1.18)
 
@@ -47,9 +49,9 @@ Approaches we had so far:
 
 - Manual code duplication
 - Code duplication via code generation
-- Operating on empty interfaces (`interface{}`)
+- Operating on empty interfaces (`interface{}`) and using type assertions
+- Operating on empty interfaces and using reflections
 - Operating on defined interfaces
-- Reflections
 
 Each approach has its own disadvantages
 
@@ -72,7 +74,7 @@ Key disadvantages:
 - Lots of manual labour
 - Code duplication lowers maintainability
 
-[//]: # (TODO: add honest work meme)
+.image ./images/honest-work.jpg 400 _
 
 ## Code generation
 
@@ -84,49 +86,71 @@ Key disadvantages:
 - It complicates project build
 - It increases compilation times
 
-## Operating on empty interfaces (1/3)
+## Empty interfaces and type assertions (1/4)
 
 .code max.go /max-number1 OMIT/,/max-number1# OMIT/
 
-## Operating on empty interfaces (2/3)
+## Empty interfaces and type assertions (2/4)
 
 .code max.go /max-number2 OMIT/,/max-number2# OMIT/
 
-## Operating on empty interfaces (3/3)
+## Empty interfaces and type assertions (3/4)
 
 .code max.go /max-number-usage OMIT/,/max-number-usage# OMIT/
+
+## Empty interfaces and type assertions (4/4)
 
 Key disadvantages:
 
 - Losing type-safety
-- Type assertions everywhere
+- Type assertions both in caller and algorithm code
+- Caller needs to wrap arguments in `interface{}`
 
-[//]: # (TODO: add everywhere meme)
+.image ./images/assertions-everywhere.jpg 350 _
 
-## Operating on defined interfaces (1/2)
+## Empty interfaces and reflections (1/3)
 
-[//]: # (TODO: do custom example with Max)
+.code max.go /max-number-reflect1 OMIT/,/max-number-reflect1# OMIT/
+
+## Empty interfaces and reflections (2/3)
+
+.code max.go /max-number-reflect2 OMIT/,/max-number-reflect2# OMIT/
+
+## Empty interfaces and reflections (3/3)
+
+.code max.go /max-number-reflect-usage OMIT/,/max-number-reflect-usage# OMIT/
+
+Key disadvantages:
+
+- abysmal readability
+- lower performance than in other approaches
+
+.image ./images/disgusting.jpg 220 _
+
+: Reflection in computing is the ability of a program to examine its own structure.
+: It’s a form of metaprogramming.
+
+## Operating on defined interfaces - max (1/2)
+
+.code max.go /max-number-defined-if1 OMIT/,/max-number-defined-if1# OMIT/
+
+## Operating on defined interfaces - max (2/2)
+
+.code max.go /max-number-defined-if2 OMIT/,/max-number-defined-if2# OMIT/
+
+## Operating on defined interfaces - stdlib sort (1/2)
 
 .code sort.go /sort OMIT/,/sort# OMIT/
 
 : Jest to przykład z biblioteki standardowej
 
-## Operating on defined interfaces (2/2)
+## Operating on defined interfaces - stdlib sort (2/2)
 
 .code sort.go /sort-usage OMIT/,/sort-usage# OMIT/
 
 Key disadvantages:
 
 - Hard to use: requires defining custom types implementing specific methods
-
-## Reflections
-
-[//]: # (TODO: Reflections - MaxNumber example)
-
-Key disadvantages:
-
-- low readability
-- lower performance
 
 ## History of Go generics
 
