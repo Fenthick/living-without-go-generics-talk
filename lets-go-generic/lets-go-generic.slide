@@ -6,10 +6,10 @@ Tags: Go, generics, types, interface, parametric polymorphism
 
 Daniel Furman  
 Software Engineer, CodiLime  
-daniel.furman@codilime.com
-gophers.slack.com: @danielfurman
-Github: @danielfurman
-Twitter: @danielfurman88
+daniel.furman@codilime.com  
+gophers.slack.com: @danielfurman  
+Github: @danielfurman  
+Twitter: @danielfurman88  
 LinkedIn: @danielfurman8
 
 ## Agenda
@@ -39,7 +39,7 @@ Go has generic constructs:
 
 What about custom generic types/functions?
 
-## 
+##  
 
 .background ./images/one-simply-does-not.jpg
 
@@ -187,24 +187,27 @@ func Max[T constraints.Ordered](s []T) T {}
 m1 := Max[int]([]int{4, -8, 15})
 ```
 
-Type parameters fundamentals [21, 22]:
+Type parameters fundamentals [21, 31]:
 
-- Each type parameter has a type constraint that acts as a kind of meta-type for the type parameter.
-- Each type constraint specifies the permissible type arguments that calling code can use for the respective type parameter.
-- At compile time the type parameter stands for a single type – the type provided as a type argument by the calling code.
-- A type argument is valid if it implements type parameter's constraint.
+- Type parameter has a type constraint (meta-type)
+- Type constraint specifies the permissible type arguments that calling code can use for the respective type parameter
+- At compile time the type parameter stands for a single type – the type provided as a type argument by the calling code
+- A type argument is valid if it implements type parameter's constraint
+- Compiler might infer type argument based on function parameter passed by caller
 
-: 1. Każdy parametr typu ma określone constraint.
+: 1. Każdy parametr typu ma określony constraint.
 : 2. Constraint określa możliwe argumenty typu, które kod wywołujący może użyć.
 : 3. W czasie kompilacji parametr typu jest określony przez argument typu podany przez kod wywołujący.
-: 4. Argument typu jest poprawny, gdy implementuje constraint parametru typu. W przeciwnym wypadku kod się nie skompiluje.
-: 5. Specjalizacja argumentu typu nie zawsze jest potrzebna, bo kompilator potrafi go wydedukować z parametrów funkcji.
+: 4. Argument typu jest poprawny, gdy implementuje constraint parametru typu.
+: 5. Kompilator może wydedukować argument typu na podstawie parametru funkcji przekazanego przez callera.
 
 ## Type constraints fundamentals (1/2)
 
-- Type constraints are declared as an interface containing methods or union of types
+- Type constraint defines set of types
+- Type constraint is declared as an interface containing methods or union of types
 - The constraint allows any type satisfying the interface
-- `~T` means that named types derived from `T` are accepted
+- If all types in the constraint support an operation, that operation may be used with the respective type parameter [32]
+- `~T` means the set of all types with underlying type `T`
 
 .code misc.go /stringable-float OMIT/,/stringable-float# OMIT/
 
@@ -214,7 +217,9 @@ Type parameters fundamentals [21, 22]:
 
 ## Generic type constraints
 
-[//]: # (TODO: add example of generic type constraint, e.g. lesser)
+Type constraint can reference other type argument:
+
+.code misc.go /generic-constraint OMIT/,/generic-constraint# OMIT/
 
 ## Built-in type constraints:
 
@@ -231,6 +236,16 @@ Constraints defined in package constraints:
 - Float - `~float32 | ~float64`
 - Complex - `~complex64 | ~complex128`
 - Ordered - `Integer | Float | ~string` (any type that supports the operators < <= >= >)
+
+## Compilation
+
+Compilation steps with generic code [31, 32]:
+
+1. Type inference
+2. Instantiation
+    - Substitute type arguments for type parameters
+    - Check that type arguments implement their constraints
+3. Invocation
 
 ## Use case: type-safe set implementation
 
@@ -279,11 +294,11 @@ Use cases for generics [30]:
 [//]: # (TODO)
 
 - Growing number of libraries using generics:
-    - [github.com/mikhailswift/go-collections](https://github.com/mikhailswift/go-collections) 
+    - [github.com/mikhailswift/go-collections](https://github.com/mikhailswift/go-collections)
     - [github.com/johnmurray/typed](https://github.com/johnmurray/typed)
 - Go 1.19 (~08.2022): stdlib packages to use generics:
-    - [github.com/golang/exp/constraints](https://github.com/golang/exp/tree/master/constraints) 
-    - [github.com/golang/exp/maps](https://github.com/golang/exp/tree/master/maps) 
+    - [github.com/golang/exp/constraints](https://github.com/golang/exp/tree/master/constraints)
+    - [github.com/golang/exp/maps](https://github.com/golang/exp/tree/master/maps)
     - [github.com/golang/exp/slices](https://github.com/golang/exp/tree/master/slices)
 
 ## Summary
@@ -325,7 +340,7 @@ Use cases for generics [30]:
 
 ## References (4/4)
 
-.link https://www.youtube.com/watch?v=WzgLqE-3IhY [30] GopherCon 2019: Ian Lance Taylor -Generics in Go  
+.link https://www.youtube.com/watch?v=WzgLqE-3IhY [30] GopherCon 2019: Ian Lance Taylor - Generics in Go  
 .link https://www.youtube.com/watch?v=TborQFPY2IM [31] GopherCon 2020: Robert Griesemer - Typing Generic Go  
 .link https://www.youtube.com/watch?v=Pa_e9EeCdy8 [32] GopherCon 2021: Robert Griesemer & Ian Lance Taylor - Generics!  
 .link https://www.youtube.com/watch?v=uh5pXt6d1nE& [33] Golang Poland #4 - Bill Kennedy - Generics Draft Proposal Review  
