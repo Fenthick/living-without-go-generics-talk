@@ -39,7 +39,7 @@ Go has generic constructs:
 
 What about custom generic types/functions?
 
-##  
+##   
 
 .background ./images/one-simply-does-not.jpg
 
@@ -122,8 +122,9 @@ Key disadvantages:
 
 Key disadvantages:
 
-- abysmal readability
-- lower performance than in other approaches
+- Abysmal readability
+- Losing type-safety
+- Lower performance than in other approaches
 
 .image ./images/disgusting.jpg 220 _
 
@@ -203,10 +204,12 @@ Type parameters fundamentals [21, 31]:
 
 ## Type constraints fundamentals (1/2)
 
+Type constraints fundamentals [31, 32]:
+
 - Type constraint defines set of types
 - Type constraint is declared as an interface containing methods or union of types
 - The constraint allows any type satisfying the interface
-- If all types in the constraint support an operation, that operation may be used with the respective type parameter [32]
+- If all types in the constraint support an operation, that operation may be used with the respective type parameter 
 - `~T` means the set of all types with underlying type `T`
 
 .code misc.go /stringable-float OMIT/,/stringable-float# OMIT/
@@ -228,7 +231,7 @@ Built-in type constraints:
 - any - alias for interface{}
 - comparable - any type whose values may be used as an operand of the comparison operators == and != (booleans, numbers, strings, pointers, channels, interfaces, arrays of comparable types, structs whose fields are all comparable types)
 
-Constraints defined in package constraints:
+Constraints defined in [golang.org/x/exp/constraints](https://pkg.go.dev/golang.org/x/exp):
 
 - Signed - `~int | ~int8 | ~int16 | ~int32 | ~int64`
 - Unsigned - `~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr`
@@ -239,13 +242,22 @@ Constraints defined in package constraints:
 
 ## Compilation
 
-Compilation steps with generic code [31, 32]:
+Function compilation steps for generic code [9, 31, 32]:
 
-1. Type inference
-2. Instantiation
-    - Substitute type arguments for type parameters
-    - Check that type arguments implement their constraints
-3. Invocation
+1. Type inference (new)
+    - Argument type inference: deduce unknown type arguments from the types of the ordinary arguments
+    - Constraint type inference: deduce unknown type arguments from known type arguments
+2. Instantiation (new)
+    - Replace type parameters with type arguments in entire signature 
+    - Verify that each type argument satisfies its constraint
+    - Instantiate internal function with given type arguments
+3. Invocation (as pre Go 1.18)
+    - Verify that each ordinary argument can be assigned to its parameter
+
+```
+func Max[T constraints.Ordered](s []T) T { ... }
+m := Max([]int{4, -8, 15})
+```
 
 ## Use case: type-safe set implementation
 
@@ -277,21 +289,37 @@ Task: implement set data structure
 
 ## Generics usage recommendations
 
-Use cases for generics [30]:
+Use cases for generics [30, 32]:
 
-- functions calculating max/min/average/mode/standard deviation of elements in a slice or maps
-- transformation functions for slices or maps
-- generic data structures, e.g. set, multimap, concurrent hash map, graph, tree, linked list with appropriate generic methods
-- functions operating on channels, e.g. combine two channels into single channel
-- functions operating on functions, e.g. call given functions in parallel and return a slice of results
+- Functions operating on slices, maps, channels of any element type
+    - Functions doing calculations on elements of slice or map, e.g. max/min/average/mode/standard deviation
+    - Transformation functions for slices or maps, e.g. scale a slice
+    - Functions operating on channels, e.g. merge two channels into single channel
+- General purpose data structures, e.g. set, multimap, concurrent hash map, graph, tree, linked list
+- Functions operating on functions, e.g. call given functions in parallel and return a slice of results
+- When the implementation of a common method looks the same for each type
 
-## When not to use generics
+## Generics usage recommendations
 
-[//]: # (TODO)
+When not to use generics [32]:
+
+- When just calling a method on given object - use specific interfaces
+    - E.g. `func ReadAll(r io.Reader) ([]byte, error)`
+    - Not `func ReadAll[T io.Reader](r T) ([]byte, error)`
+- When the implementation of a common method is different for each type
+    - E.g. `file.Read()` and `buffer.Read()`
+- When the operation is different for each type (and requiring specific interfaces is not preferred) - use reflections
+    - E.g. `func Marshal(v interface{}) ([]byte, error)`
+    - Not `func Marshal[T Marshaler](v T) ([]byte, error)`
+
+## Generics usage recommendations
+
+Usage rules of thumb [32]:
+
+- Write a code as usual and refactor it to use type parameters only if you see repeating boilerplate
+- When operating on type parameters, prefer functions to methods. For the caller it is easier to pass function than modify types to implement methods.
 
 ## Future of Go generics
-
-[//]: # (TODO)
 
 - Growing number of libraries using generics:
     - [github.com/mikhailswift/go-collections](https://github.com/mikhailswift/go-collections)
