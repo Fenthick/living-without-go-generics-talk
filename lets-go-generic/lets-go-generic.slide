@@ -24,11 +24,9 @@ LinkedIn: @danielfurman8
 
 ## Introduction
 
-- Generic programming enables the representation of functions and data structures in a generic form, with types factored out [30]
+- Generic programming enables writing code that works with multiple types
+    - Concrete type is specified later, while using generic functionality
 - Go 1.18 brings generic programming mechanism - type parameters
-
-: Programowanie generyczne to takie, w którym funkcje lub typy działają z wieloma typami.
-: Konkretny używany typ jest określony później w czasie wywołania funkcji lub inicjalizacji obiektu.
 
 ## Generic programming substitutes (before Go 1.18)
 
@@ -174,8 +172,6 @@ Key disadvantages:
 - 2022-03 - Go 1.18 release
 
 : Poprzednie propozycje okazywały się zbyt skomplikowane w implementacji i użyciu.
-: Propozycja z 2018 zawierała koncepcję kontraktu, który definiował wymagania dla jednej lub więcej typu-uznano to za zbyt skomplikowane.
-: W propozycji z 2018 używano zwykłych nawiasów do przekazywania argumentów typu, co "zlewało" się z ze zwykłymi argumentami - było nieczytelne.
 
 ## Type parameters - Max() example
 
@@ -213,6 +209,12 @@ Type constraints fundamentals [31, 32]:
 - `~T` means the set of all types with underlying type `T`
 
 .code misc.go /stringable-float OMIT/,/stringable-float# OMIT/
+
+: 1. Type constraint definiuje zbiór typów.
+: 2. Type constraint jest określony jako interfejs zawierający zbiór metod lub typów.
+: 3. Constraint akceptuje dowolny typ implementujący ten interfejs.
+: 4. Jeśli wszystkie typy w danego constrainta posiadają pewną operację (np. operator nierówności), to może być ona użyta na danym parametrze typu
+: 5. `~T` oznacza zbiór wszystkich typów bazowanych na typie `T`.
 
 ## Type constraints fundamentals (2/2)
 
