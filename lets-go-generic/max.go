@@ -1,10 +1,11 @@
 package main
 
 import (
-	"constraints"
 	"errors"
 	"fmt"
 	"reflect"
+
+	"golang.org/x/exp/constraints"
 )
 
 func main() {}

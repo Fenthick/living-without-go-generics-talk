@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/cmars/represent v0.0.0-20170329133824-b1ce3bcceb62
+	golang.org/x/exp v0.0.0-20220301223727-77fc55f9b6c1
 	golang.org/x/tools v0.1.8
 )
 
